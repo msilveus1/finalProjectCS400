@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
@@ -62,25 +63,31 @@ public class Main extends Application {
 		//This will handle the exiting of the program 
 		Button exitProgramButton = new Button("Exit");
 		exitProgramButton.setMaxWidth(150);
-	
-		exitProgamButton.setOnAction(e -> System.exit(0));
+		exitProgramButton.setOnAction(e -> System.exit(0));
 		//Handles the switching to the export screen
 		Button exportButton = new Button("Export File");
-		exportButton.setMaxWidth(150)
+		exportButton.setMaxWidth(150);
 
-		exportButton.setAction(e -> exportFileScene(primaryStage, root));
+		exportButton.setOnAction(e -> exportFileScene(primaryStage, root));
 		//Sets up read in screen
 		Button readButton = new Button("Read File");
 		readButton.setMaxWidth(150);
-		box.getChildren().addAll(exitButton, readButton, exportButton);
+		box.getChildren().addAll(exitProgramButton, readButton, exportButton);
 		readButton.setOnAction(e -> readFileScene(primaryStage, root));
 		root.setTop(box);
 		TextField numQuestions = new TextField("# of Q's");
 		Button addQuestion = new Button("Add Question");
 		
+		//Center Hortizonton box
+		HBox center = new HBox();
+		center.getChildren().addAll(new Label("Enter number of questions: "), numQuestions);
+		root.setAlignment(center, Pos.BOTTOM_CENTER);
+		root.setCenter(center);
+		
+		
 		//TODO: Set action for button
 		//addQuestion.setAction();
-		box.getChildren.add(addQuestion);
+		box.getChildren().add(addQuestion);
 		ListView<String> topics = new ListView<String>();
 		ObservableList<String> topic = FXCollections.observableArrayList();
 		topic.add("CS 400");
@@ -90,10 +97,11 @@ public class Main extends Application {
 		VBox vbox = new VBox();
 		root.setLeft(vbox);
 		topics.setItems(topic);
-		vbox.getAllChildren.add(new Label("Topic List"),topics);
-		root.setMargin(topics, new Insets(50, 30, 30, 30));
-		root.setLeft(topics);
-		root.setRight(numQuestions);
+		Label label = new Label ("Topic List. Click to select topics");
+		vbox.getChildren().addAll(label,topics);
+		root.setMargin(vbox, new Insets(50, 30, 30, 30));
+	
+		
 		Button startQuiz = new Button("Start Quiz ");
 		startQuiz.setMaxWidth(150);
         root.setAlignment(startQuiz, Pos.CENTER);
@@ -114,11 +122,11 @@ public class Main extends Application {
 	    
 	    primaryStage.setScene(this.readScene);	
 	}
-	public void exportFileScence(Stage primaryStage, BorderPane root){
+	public void exportFileScene(Stage primaryStage, BorderPane root){
 		BorderPane pane = new BorderPane();
 		this.exportScene = new Scene(pane, 500, 500);
 		Button exportButton = new Button("Export Quiz");
-		button.setMaxWidth(150);
+		exportButton.setMaxWidth(150);
 		pane.setBottom(exportButton);
 		exportButton.setOnAction(e -> mainMenu(primaryStage, root));
 		primaryStage.setScene(this.exportScene);
