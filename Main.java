@@ -114,7 +114,7 @@ public class Main extends Application {
 	    
 	    primaryStage.setScene(this.readScene);	
 	}
-	public void exportFileScence(Stage primaryStage, BorderPane root){
+	public void exportFileScene(Stage primaryStage, BorderPane root){
 		BorderPane pane = new BorderPane();
 		this.exportScene = new Scene(pane, 500, 500);
 		Button exportButton = new Button("Export Quiz");
