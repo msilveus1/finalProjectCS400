@@ -22,7 +22,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-
+import javafx.scene.control.TextField;
 public class Main extends Application {
 
 	Scene exportScene;
@@ -30,21 +30,26 @@ public class Main extends Application {
 	Scene mainMenu;
 
 	@Override
+	/**
+	*This is the method that starts our GUI 	
+       	*/
 	public void start(Stage primaryStage) {
 		try {
 			BorderPane root = new BorderPane();
+			//TODO:Check Specifications for the scene
 			Scene scene = new Scene(root, 700, 700, Color.BLACK);
 			this.mainMenu = scene;
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			
+			//This line may not be neccessary
 		
 			mainMenu(primaryStage, root);
-			
+			//Populating the main menu
 			primaryStage.setTitle("Quiz Generator");
 			primaryStage.setScene(scene);
 			primaryStage.show();
-
+			
 		} catch (Exception e) {
+			//TODO: Check to see if we need deal with a finally block
 			e.printStackTrace();
 		}
 	}
@@ -54,32 +59,41 @@ public class Main extends Application {
 		HBox box = new HBox();
 		VBox vertical = new VBox();
 		
-
-		Button exitButton = new Button("Exit");
-		exitButton.setMaxWidth(150);
-		exitButton.setOnAction(e -> System.exit(0));
-
+		//This will handle the exiting of the program 
+		Button exitProgramButton = new Button("Exit");
+		exitProgramButton.setMaxWidth(150);
+	
+		exitProgamButton.setOnAction(e -> System.exit(0));
+		//Handles the switching to the export screen
 		Button exportButton = new Button("Export File");
-		exportButton.setMaxWidth(150);
+		exportButton.setMaxWidth(150)
 
+		exportButton.setAction(e -> exportFileScene(primaryStage, root));
+		//Sets up read in screen
 		Button readButton = new Button("Read File");
 		readButton.setMaxWidth(150);
 		box.getChildren().addAll(exitButton, readButton, exportButton);
 		readButton.setOnAction(e -> readFileScene(primaryStage, root));
 		root.setTop(box);
-
+		TextField numQuestions = new TextField("# of Q's");
+		Button addQuestion = new Button("Add Question");
 		
+		//TODO: Set action for button
+		//addQuestion.setAction();
+		box.getChildren.add(addQuestion);
 		ListView<String> topics = new ListView<String>();
 		ObservableList<String> topic = FXCollections.observableArrayList();
 		topic.add("CS 400");
 		topic.add("CS 252");
 		topic.add("CS 354");
-
+		//We added a new vbox to the left pane for the topics
+		VBox vbox = new VBox();
+		root.setLeft(vbox);
 		topics.setItems(topic);
-		root.setLeft(topics);
+		vbox.getAllChildren.add(new Label("Topic List"),topics);
 		root.setMargin(topics, new Insets(50, 30, 30, 30));
 		root.setLeft(topics);
-		
+		root.setRight(numQuestions);
 		Button startQuiz = new Button("Start Quiz ");
 		startQuiz.setMaxWidth(150);
         root.setAlignment(startQuiz, Pos.CENTER);
@@ -99,6 +113,16 @@ public class Main extends Application {
 	    button.setOnAction(e -> mainMenu(primaryStage, root));
 	    
 	    primaryStage.setScene(this.readScene);	
+	}
+	public void exportFileScence(Stage primaryStage, BorderPane root){
+		BorderPane pane = new BorderPane();
+		this.exportScene = new Scene(pane, 500, 500);
+		Button exportButton = new Button("Export Quiz");
+		button.setMaxWidth(150);
+		pane.setBottom(exportButton);
+		exportButton.setOnAction(e -> mainMenu(primaryStage, root));
+		primaryStage.setScene(this.exportScene);
+
 	}
 
 	public static void main(String[] args) {
