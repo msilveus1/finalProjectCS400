@@ -66,7 +66,7 @@ public class Main extends Application {
 		exitProgamButton.setOnAction(e -> System.exit(0));
 		//Handles the switching to the export screen
 		Button exportButton = new Button("Export File");
-		exportButton.setMaxWidth(150)
+		exportButton.setMaxWidth(150);
 
 		exportButton.setAction(e -> exportFileScene(primaryStage, root));
 		//Sets up read in screen
