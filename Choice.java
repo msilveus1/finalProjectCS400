@@ -38,14 +38,7 @@ public class Choice {
 		return choiceString;
 	}
 
-	/**
-	 * Mutator method for choiceString field
-	 * @param choiceString
-	 */
-	public void setChoiceString(String choiceString) {
-		this.choiceString = choiceString;
-	}
-
+	
 	/**
 	 * Accessor method for getChoiceValidity field
 	 * @return choiceValidity
@@ -54,11 +47,5 @@ public class Choice {
 		return choiceValidity; 
 	}
 
-	/**
-	 * Mutator method for choiceValidity field
-	 * @param choiceValidity
-	 */
-	public void setChoiceValidity(boolean choiceValidity) {
-		this.choiceValidity = choiceValidity; 
-	}
+	
 }

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 
 class Test {
 
+    /**
+     * tests basic setup of choice class
+     */
     @org.junit.jupiter.api.Test
     void test01_choice_test() {
         Choice testC1 = new Choice("test choice", false);
@@ -14,6 +17,9 @@ class Test {
             fail("fail to set validity");
     }
     
+    /**
+     * tests setup of question class
+     */
     @org.junit.jupiter.api.Test
     void test02_question_basic() {
         Choice testC1 = new Choice("test choice", false);
@@ -29,8 +35,11 @@ class Test {
             fail("wrong meta data");
     }
     
+    /**
+     * tests multiple choice judgment method of the question class
+     */
     @org.junit.jupiter.api.Test
-    void test03_question_basic() {
+    void test03_question_MultipleChoice() {
         Choice testC1 = new Choice("test choice", false);
         Choice testC2 = new Choice("test Choice 2", true);
         Choice testC3 = new Choice("test choice 3", false);

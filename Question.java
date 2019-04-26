@@ -86,14 +86,7 @@ public class Question {
 		return choiceList;
 	}
 
-	/**
-	 * Mutator method for choice field
-	 * @param choiceList
-	 */
-	void setChoiceList(ArrayList<Choice> choiceList) {
-		this.choiceList = choiceList;
-	}
-
+	
 	/**
 	 * Accessor method image field
 	 * @return image
@@ -102,13 +95,7 @@ public class Question {
 		return image;
 	}
 
-	/**
-	 * Mutator method for image field
-	 * @param image
-	 */
-	public void setImage(ImageView image) {
-		this.image = image;
-	}
+	
 
 	/**
 	 * Accessor method for question field
@@ -118,13 +105,7 @@ public class Question {
 		return question;
 	}
 
-	/**
-	 * Mutator method for question field
-	 * @param question
-	 */
-	public void setQuestion(String question) {
-		this.question = question;
-	}
+	
 
 	/**
 	 * Accessor method for multipleChoice field
@@ -134,13 +115,7 @@ public class Question {
 		return multipleChoice;
 	}
 
-	/**
-	 * Mutator method for multipleChoice field
-	 * @param multipleChoice
-	 */
-	public void setMultipleChoice(boolean multipleChoice) {
-		this.multipleChoice = multipleChoice;
-	}
+	
 	
 	/**
 	 * Accessor method for metaData field
@@ -150,11 +125,5 @@ public class Question {
 		return metaData;
 	}
 
-	/**
-	 * Mutator method for metaData field
-	 * @param multipleChoice
-	 */
-	public void setMetaData(String metaData) {
-		this.metaData = metaData;
-	}
+	
 }
