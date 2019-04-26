@@ -10,7 +10,7 @@
 // Due Date: 5/2/2019
 //
 
-package application;
+
 
 /**
  * This class represents a single choice within a question in the quiz

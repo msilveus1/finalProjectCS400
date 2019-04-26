@@ -55,7 +55,6 @@ public class Reader {
 					String questionText = (String) currentJSON.get("questionText");
 					String topic = (String) currentJSON.get("topic");
 					if (!questionMap.containsKey(topic)) {
-						System.out.println(topic);
 						questionMap.put(topic, new ArrayList<Question>());
 					}
 					String image = (String) currentJSON.get("image");
@@ -75,10 +74,9 @@ public class Reader {
 					}
 					Question question;
 					if (image.contentEquals("none"))
-						question = new Question(choiceList, questionText, metaData);
+						question = new Question(choiceList, questionText, metaData, topic);
 					else
-						question = new Question(choiceList, image, questionText, metaData);
-					System.out.println("print twice");
+						question = new Question(choiceList, image, questionText, metaData, topic);
 					questionMap.get(topic).add(question);
 
 				}
@@ -100,7 +98,7 @@ public class Reader {
 	}
 
 	public static void main(String[] args) {
-		Reader r = new Reader("error.json", new HashMap<String, ArrayList<Question>>());
+		Reader r = new Reader("questions_003.json", new HashMap<String, ArrayList<Question>>());
 		try {
 			r.parseJSONFile();
 			Map<String, ArrayList<Question>> temp = r.getQuestionMap();
