@@ -122,6 +122,9 @@ public class Main extends Application {
 	    
 	    primaryStage.setScene(this.readScene);	
 	}
+	
+	
+	
 	public void exportFileScene(Stage primaryStage, BorderPane root){
 		BorderPane pane = new BorderPane();
 		this.exportScene = new Scene(pane, 500, 500);
