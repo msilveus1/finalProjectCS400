@@ -1,4 +1,4 @@
-package application;
+
 
 @SuppressWarnings("serial")
 public class JSONInputException extends Exception {
