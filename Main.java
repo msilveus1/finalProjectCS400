@@ -1,6 +1,8 @@
 package application;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -26,9 +28,13 @@ import javafx.scene.control.TextField;
 
 public class Main extends Application {
 
-	Scene exportScene;
-	Scene readScene;
-	Scene mainMenu;
+	private Scene exportScene;
+	private Scene readScene;
+	private Scene mainMenu;
+	private Map<String, ArrayList<Question>> questionMap;
+	private Reader reader;
+	//private Writer writer;
+	
 
 	@Override
 	/**
@@ -116,6 +122,10 @@ public class Main extends Application {
 		Button button = new Button("Back");
 		button.setMaxWidth(150);
 		pane.setBottom(button);
+		TextField text = new TextField();
+		pane.setCenter(text);
+	    
+		
 		button.setOnAction(e -> mainMenu(primaryStage, root));
 
 		primaryStage.setScene(this.readScene);
