@@ -11,7 +11,7 @@
 // Due Date: 5/2/2019
 //
 
-
+package application;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ public class Question {
 	private String question; // field to store the question String
 	private String metaData; // field to store the meta data for a question
 	private String topic; // the topic associated with this question
+	private String imageName;
 	private boolean multipleChoice; // field to store whether the question is multiple choice
 
 	/**
@@ -43,6 +44,7 @@ public class Question {
 		question = q; // initialize question
 		metaData = md; // initialize metaData
 		topic = t; // initialize topic
+		imageName = "none";
 		image = null;
 		isMultipleChoice(); // call helper method isMultipleChoice to initialize multipleChoice field
 	}
@@ -61,6 +63,7 @@ public class Question {
 		image = new Image(img);
 		question = q; // initialize question
 		metaData = md; // initialize metaData
+		imageName = img;
 		topic = t; // initialize topic
 		isMultipleChoice(); // call helper method isMultipleChoice to initialize multipleChoice field
 	}
@@ -94,7 +97,32 @@ public class Question {
 		return topic;
 	}
 
+	/**
+	 * Mutator method for topic field
+	 * 
+	 * @param topic
+	 */
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
 	
+	/**
+	 * Accessor method for imageName field
+	 * 
+	 * @return imageName
+	 */
+	public String getImageName() {
+		return imageName;
+	}
+
+	/**
+	 * Mutator method for imageName field
+	 * 
+	 * @param imageName
+	 */
+	public void setImageName(String imageName) {
+		this.imageName = imageName;
+	}
 
 	/**
 	 * Accessor method for choiceList field
@@ -105,7 +133,15 @@ public class Question {
 		return choiceList;
 	}
 
-	
+	/**
+	 * Mutator method for choice field
+	 * 
+	 * @param choiceList
+	 */
+	void setChoiceList(ArrayList<Choice> choiceList) {
+		this.choiceList = choiceList;
+	}
+
 //	/**
 //	 * Accessor method image field
 //	 * 
@@ -132,6 +168,14 @@ public class Question {
 		return question;
 	}
 
+	/**
+	 * Mutator method for question field
+	 * 
+	 * @param question
+	 */
+	public void setQuestion(String question) {
+		this.question = question;
+	}
 
 	/**
 	 * Accessor method for multipleChoice field
@@ -142,8 +186,15 @@ public class Question {
 		return multipleChoice;
 	}
 
-	
-	
+	/**
+	 * Mutator method for multipleChoice field
+	 * 
+	 * @param multipleChoice
+	 */
+	public void setMultipleChoice(boolean multipleChoice) {
+		this.multipleChoice = multipleChoice;
+	}
+
 	/**
 	 * Accessor method for metaData field
 	 * 

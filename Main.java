@@ -1,3 +1,4 @@
+package application;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
@@ -29,6 +31,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 
 public class Main extends Application {
 
@@ -37,8 +40,7 @@ public class Main extends Application {
 	private Scene mainMenu;
 	private Map<String, ArrayList<Question>> questionMap;
 	private Reader reader;
-	//private Writer writer;
-	
+	// private Writer writer;
 
 	@Override
 	/**
@@ -125,7 +127,7 @@ public class Main extends Application {
 		BorderPane pane = new BorderPane();
 		this.readScene = new Scene(pane, 500, 500);
 
-		HBox bottom = new HBox();	
+		HBox bottom = new HBox();
 		Button button = new Button("Back");
 		button.setMaxWidth(150);
 		TextField text = new TextField();
@@ -134,28 +136,36 @@ public class Main extends Application {
 		bottom.getChildren().addAll(button, submitButton);
 		pane.setBottom(bottom);
 		pane.setCenter(text);
-	    
-		
+
 		button.setOnAction(e -> mainMenu(primaryStage, root));
 		submitButton.setOnAction(e -> {
 			try {
 				reader.parseJSONFile(text.getText());
 			} catch (FileNotFoundException e1) {
-				Label label = new Label(" Error : file doesn't exit )");
-				
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setContentText(
+						"Warning: Entered file not found. Please make sure file is contained within your project folder.");
+				alert.show();
+				readFileScene(primaryStage, root);
+
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setContentText(
+						"Warning: File could not be read. Please ");
+				alert.show();
+				readFileScene(primaryStage, root);
+
 			} catch (ParseException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (JSONInputException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setContentText(
+						"Warning: JSON File incorrectly formatted. Please edit your JSON File to match the correct file input, then try again.");
+				alert.show();
+				readFileScene(primaryStage, root);
 			}
 		});
-	    
-		
 
 		primaryStage.setScene(this.readScene);
 	}
