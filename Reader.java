@@ -25,11 +25,10 @@ import javafx.scene.image.ImageView;
 public class Reader {
 
 	Map<String, ArrayList<Question>> questionMap;
-	String filePath;
 
-	public Reader(String fileName, Map<String, ArrayList<Question>> map) {
+	public Reader(Map<String, ArrayList<Question>> map) {
 		questionMap = map;
-		filePath = fileName;
+		System.out.println(questionMap);
 	}
 
 	/**
@@ -42,11 +41,11 @@ public class Reader {
 	 * @throws IOException           if the give file cannot be read
 	 * @throws ParseException        if the given json cannot be parsed
 	 */
-	public void parseJSONFile() throws FileNotFoundException, IOException, ParseException, JSONInputException {
-		File file = new File(filePath);
+	public void parseJSONFile(String fileName) throws FileNotFoundException, IOException, ParseException, JSONInputException {
+		File file = new File(fileName);
 		if (file.exists() && !file.isDirectory()) {
 			if (file.canRead()) {
-				Object obj = new JSONParser().parse(new FileReader(filePath));
+				Object obj = new JSONParser().parse(new FileReader(fileName));
 				JSONObject jo = (JSONObject) obj;
 				JSONArray questionArray = (JSONArray) jo.get("questionArray");
 				for (int i = 0; i < questionArray.size(); i++) {
@@ -54,8 +53,8 @@ public class Reader {
 					String metaData = (String) currentJSON.get("meta-data");
 					String questionText = (String) currentJSON.get("questionText");
 					String topic = (String) currentJSON.get("topic");
+					System.out.println(topic);
 					if (!questionMap.containsKey(topic)) {
-						System.out.println(topic);
 						questionMap.put(topic, new ArrayList<Question>());
 					}
 					String image = (String) currentJSON.get("image");
@@ -75,10 +74,9 @@ public class Reader {
 					}
 					Question question;
 					if (image.contentEquals("none"))
-						question = new Question(choiceList, questionText, metaData);
+						question = new Question(choiceList, questionText, metaData, topic);
 					else
-						question = new Question(choiceList, image, questionText, metaData);
-					System.out.println("print twice");
+						question = new Question(choiceList, image, questionText, metaData, topic);
 					questionMap.get(topic).add(question);
 
 				}
@@ -100,9 +98,9 @@ public class Reader {
 	}
 
 	public static void main(String[] args) {
-		Reader r = new Reader("error.json", new HashMap<String, ArrayList<Question>>());
+		Reader r = new Reader(new HashMap<String, ArrayList<Question>>());
 		try {
-			r.parseJSONFile();
+			r.parseJSONFile("error.json");
 			Map<String, ArrayList<Question>> temp = r.getQuestionMap();
 			ArrayList<Question> test = temp.get("set");
 			for (int i = 0; i < test.size(); i++) {

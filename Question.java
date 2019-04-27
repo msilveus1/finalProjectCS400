@@ -24,62 +24,89 @@ import javafx.scene.image.ImageView;
  *
  */
 public class Question {
-	ArrayList<Choice> choiceList; //field to store an ArrayList of Choices for a Question
-	ImageView image; //field to store an image for a question
-	String question; //field to store the question String
-	String metaData; //field to store the meta data for a question
-	boolean multipleChoice; //field to store whether the question is multiple choice 
-	
+	private ArrayList<Choice> choiceList; // field to store an ArrayList of Choices for a Question
+	private Image image; // field to store an image for a question
+	private String question; // field to store the question String
+	private String metaData; // field to store the meta data for a question
+	private String topic; // the topic associated with this question
+	private boolean multipleChoice; // field to store whether the question is multiple choice
+
 	/**
-	 * This is a constructor with parameters of ArrayList<Choice> choice,
-	 * and String q.
+	 * This is a constructor with parameters of ArrayList<Choice> choice, and String
+	 * q.
+	 * 
 	 * @param choice ArrayList of Choices for a Question in the quiz
-	 * @param q  String the represents the question
+	 * @param q      String the represents the question
 	 */
-	public Question(ArrayList<Choice> choice, String q, String md) {
-		choiceList = choice; //initialize choiceList
-		question = q; //initialize question
-		metaData = md; //initialize metaData
-		image = null; 
-		isMultipleChoice(); //call helper method isMultipleChoice to initialize multipleChoice field
+	public Question(ArrayList<Choice> choice, String q, String md, String t) {
+		choiceList = choice; // initialize choiceList
+		question = q; // initialize question
+		metaData = md; // initialize metaData
+		topic = t; // initialize topic
+		image = null;
+		isMultipleChoice(); // call helper method isMultipleChoice to initialize multipleChoice field
 	}
 
 	/**
-	 * This is a constructor with parameters of ArrayList<Choice> choice, 
-	 * ImageView image, and String q.
+	 * This is a constructor with parameters of ArrayList<Choice> choice, ImageView
+	 * image, and String q.
+	 * 
 	 * @param choice ArrayList of Choices for a Question in the quiz
-	 * @param img  Image that is in the Question
-	 * @param q  String the represents the question
+	 * @param img    Image that is in the Question
+	 * @param q      String the represents the question
 	 */
-	public Question(ArrayList<Choice> choice, String img, String q, String md) {
-		choiceList = choice; //initialize choiceList
-		image = new ImageView(new Image(img)); //initialize image //////BROKEN
-		question = q; //initialize question
-		metaData = md; //initialize metaData
-		isMultipleChoice(); //call helper method isMultipleChoice to initialize multipleChoice field
+	public Question(ArrayList<Choice> choice, String img, String q, String md, String t) {
+		choiceList = choice; // initialize choiceList
+		// image = new ImageView(new Image(img)); //initialize image //////BROKEN
+		image = new Image(img);
+		question = q; // initialize question
+		metaData = md; // initialize metaData
+		topic = t; // initialize topic
+		isMultipleChoice(); // call helper method isMultipleChoice to initialize multipleChoice field
 	}
 
 	/**
-	 * This is a private helper method used to determine whether the choices in a question
-	 * contain multiple true choice options. If there are multiple choices that are true,
-	 * multipleChoice field is set to true, otherwise multipleChoice field is set to false.
+	 * This is a private helper method used to determine whether the choices in a
+	 * question contain multiple true choice options. If there are multiple choices
+	 * that are true, multipleChoice field is set to true, otherwise multipleChoice
+	 * field is set to false.
 	 */
 	private void isMultipleChoice() {
-		int cnt = 0; //counter variable to keep track of number of true choices
-		for(int i = 0; i<choiceList.size();i++) { //loop to iterate through the choice list
-			if(choiceList.get(i).getChoiceValidity())
-				cnt++; //if choice is true, increment the counter
-			if(cnt>1) {
-				multipleChoice = true; //if there are more than one true choice, update multipleChoice
-				break;                //and exit loop
+		int cnt = 0; // counter variable to keep track of number of true choices
+		for (int i = 0; i < choiceList.size(); i++) { // loop to iterate through the choice list
+			if (choiceList.get(i).getChoiceValidity())
+				cnt++; // if choice is true, increment the counter
+			if (cnt > 1) {
+				multipleChoice = true; // if there are more than one true choice, update multipleChoice
+				break; // and exit loop
 			}
 		}
 		multipleChoice = false;
 	}
 	
+
+	/**
+	 * Accessor method for topic field
+	 * 
+	 * @return topic
+	 */
+	public String getTopic() {
+		return topic;
+	}
+
+	/**
+	 * Mutator method for topic field
+	 * 
+	 * @param topic
+	 */
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
+
 	/**
 	 * Accessor method for choiceList field
-	 * @return  choiceList
+	 * 
+	 * @return choiceList
 	 */
 	public ArrayList<Choice> getChoiceList() {
 		return choiceList;
@@ -87,30 +114,33 @@ public class Question {
 
 	/**
 	 * Mutator method for choice field
+	 * 
 	 * @param choiceList
 	 */
 	void setChoiceList(ArrayList<Choice> choiceList) {
 		this.choiceList = choiceList;
 	}
 
-	/**
-	 * Accessor method image field
-	 * @return image
-	 */
-	public ImageView getImage() {
-		return image;
-	}
-
-	/**
-	 * Mutator method for image field
-	 * @param image
-	 */
-	public void setImage(ImageView image) {
-		this.image = image;
-	}
+//	/**
+//	 * Accessor method image field
+//	 * 
+//	 * @return image
+//	 */
+//	public ImageView getImage() {
+//		return image;
+//	}
+//
+//	/**
+//	 * Mutator method for image field
+//	 * @param image
+//	 */
+//	public void setImage(ImageView image) {
+//		this.image = image;
+//	}
 
 	/**
 	 * Accessor method for question field
+	 * 
 	 * @return question
 	 */
 	public String getQuestion() {
@@ -119,6 +149,7 @@ public class Question {
 
 	/**
 	 * Mutator method for question field
+	 * 
 	 * @param question
 	 */
 	public void setQuestion(String question) {
@@ -127,22 +158,25 @@ public class Question {
 
 	/**
 	 * Accessor method for multipleChoice field
-	 * @return multipleChoice 
+	 * 
+	 * @return multipleChoice
 	 */
-    boolean getMultipleChoice() {
+	boolean getMultipleChoice() {
 		return multipleChoice;
 	}
 
 	/**
 	 * Mutator method for multipleChoice field
+	 * 
 	 * @param multipleChoice
 	 */
 	public void setMultipleChoice(boolean multipleChoice) {
 		this.multipleChoice = multipleChoice;
 	}
-	
+
 	/**
 	 * Accessor method for metaData field
+	 * 
 	 * @return metaData
 	 */
 	public String getMetaData() {
@@ -151,6 +185,7 @@ public class Question {
 
 	/**
 	 * Mutator method for metaData field
+	 * 
 	 * @param multipleChoice
 	 */
 	public void setMetaData(String metaData) {

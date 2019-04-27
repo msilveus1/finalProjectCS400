@@ -1,6 +1,13 @@
 package application;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.json.simple.parser.ParseException;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -26,9 +33,13 @@ import javafx.scene.control.TextField;
 
 public class Main extends Application {
 
-	Scene exportScene;
-	Scene readScene;
-	Scene mainMenu;
+	private Scene exportScene;
+	private Scene readScene;
+	private Scene mainMenu;
+	private Map<String, ArrayList<Question>> questionMap;
+	private Reader reader;
+	//private Writer writer;
+	
 
 	@Override
 	/**
@@ -36,6 +47,8 @@ public class Main extends Application {
 	 */
 	public void start(Stage primaryStage) {
 		try {
+			questionMap = new TreeMap<String, ArrayList<Question>>();
+			reader = new Reader(questionMap);
 			BorderPane root = new BorderPane();
 			// TODO:Check Specifications for the scene
 			Scene scene = new Scene(root, 700, 700, Color.BLACK);
@@ -113,10 +126,37 @@ public class Main extends Application {
 		BorderPane pane = new BorderPane();
 		this.readScene = new Scene(pane, 500, 500);
 
+		HBox bottom = new HBox();	
 		Button button = new Button("Back");
 		button.setMaxWidth(150);
-		pane.setBottom(button);
+		TextField text = new TextField();
+		Button submitButton = new Button("Submit");
+		submitButton.setAlignment(Pos.BOTTOM_RIGHT);
+		bottom.getChildren().addAll(button, submitButton);
+		pane.setBottom(bottom);
+		pane.setCenter(text);
+	    
+		
 		button.setOnAction(e -> mainMenu(primaryStage, root));
+		submitButton.setOnAction(e -> {
+			try {
+				reader.parseJSONFile(text.getText());
+			} catch (FileNotFoundException e1) {
+				Label label = new Label(" Error : file doesn't exit )");
+				
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (ParseException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (JSONInputException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+	    
+		
 
 		primaryStage.setScene(this.readScene);
 	}
