@@ -1,4 +1,3 @@
-package application;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -164,7 +163,8 @@ public class Main extends Application {
 						"Warning: JSON File incorrectly formatted. Please edit your JSON File to match the correct file input, then try again.");
 				alert.show();
 				readFileScene(primaryStage, root);
-			}
+			} 
+			
 		});
 
 		primaryStage.setScene(this.readScene);

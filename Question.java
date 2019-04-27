@@ -11,7 +11,6 @@
 // Due Date: 5/2/2019
 //
 
-package application;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -81,7 +80,7 @@ public class Question {
 				cnt++; // if choice is true, increment the counter
 			if (cnt > 1) {
 				multipleChoice = true; // if there are more than one true choice, update multipleChoice
-				break; // and exit loop
+				return; // and exit loop
 			}
 		}
 		multipleChoice = false;

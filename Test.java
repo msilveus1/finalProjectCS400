@@ -1,6 +1,10 @@
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import org.json.simple.parser.ParseException;
 
 class Test {
 
@@ -14,6 +18,7 @@ class Test {
             fail("fail to set validity");
     }
     
+    @org.junit.jupiter.api.Test
     void test02_Question_setup() {
         Choice testc1 = new Choice("test choice", true);
         Choice testc2 = new Choice("test choice", false);
@@ -22,13 +27,14 @@ class Test {
         testCL.add(testc2);
         Question testQ = new Question(testCL,"do you know the answer?", "meta data", "");
         
-        if(!testQ.getQuestion().equals("do you know the answer"))
+        if(!testQ.getQuestion().equals("do you know the answer?"))
             fail("wrong question string");
         if(!testQ.getMetaData().equals("meta data"))
             fail("wrong meta data");
         
     }
 
+    @org.junit.jupiter.api.Test
     void test03_Question_multipleChoice() {
         Choice testc1 = new Choice("test choice", true);
         Choice testc2 = new Choice("test choice", false);
@@ -46,8 +52,50 @@ class Test {
         testCL1.add(testc3);
         testCL1.add(testc4);
         Question testQ1 = new Question(testCL1,"do you know the answer?", "meta data", "");
-        if(testQ1.getMetaData().equals("meta data"))
+        if(!testQ1.getMultipleChoice())
             fail("fail to setup multiple choice question");
         
+    }
+    
+    @org.junit.jupiter.api.Test
+    void test04_Reader_FileNotExist() {
+        Reader testReader = new Reader(new HashMap<String, ArrayList<Question>>());
+        try{
+            testReader.parseJSONFile("nonexist location");
+        }
+        catch(FileNotFoundException e) {
+        }
+        catch(JSONInputException e) {
+            fail("unexpected exception");
+        }
+        catch(ParseException e) {
+            fail("unexpected exception");
+        }
+        
+        catch(Exception e) {
+            fail("unexpected exception");
+        }
+    }
+    
+    @org.junit.jupiter.api.Test
+    void test05_Reader_multipleChoice() {
+        Reader testReader = new Reader(new HashMap<String, ArrayList<Question>>());
+        try{
+            testReader.parseJSONFile("test.json");
+        }
+        catch(FileNotFoundException e) {
+            fail("unexpected exception1");
+        }
+        catch(JSONInputException e) {
+            fail("unexpected exception2");
+        }
+        catch(ParseException e) {
+            fail("unexpected exception3");
+        }
+        
+        catch(Exception e) {
+            e.printStackTrace();
+            fail("unexpected exception4");
+        }
     }
 }
