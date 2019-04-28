@@ -75,8 +75,15 @@ public class Reader {
 					Question question;
 					if (image.contentEquals("none"))
 						question = new Question(choiceList, questionText, metaData, topic);
-					else
-						question = new Question(choiceList, image, questionText, metaData, topic);
+					else {
+					    try{
+					        question = new Question(choiceList, image, questionText, metaData, topic);
+					    }
+					    catch(IllegalArgumentException e1) {
+					        throw new JSONInputException("no image");
+					    }
+					}
+						
 					questionMap.get(topic).add(question);
 
 				}
@@ -100,7 +107,7 @@ public class Reader {
 	public static void main(String[] args) {
 		Reader r = new Reader(new HashMap<String, ArrayList<Question>>());
 		try {
-			r.parseJSONFile("error.json");
+			r.parseJSONFile("test.json");
 			Map<String, ArrayList<Question>> temp = r.getQuestionMap();
 			ArrayList<Question> test = temp.get("set");
 			for (int i = 0; i < test.size(); i++) {

@@ -11,7 +11,6 @@
 // Due Date: 5/2/2019
 //
 
-package application;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -60,7 +59,8 @@ public class Question {
 	public Question(ArrayList<Choice> choice, String img, String q, String md, String t) {
 		choiceList = choice; // initialize choiceList
 		// image = new ImageView(new Image(img)); //initialize image //////BROKEN
-		image = new Image(img);
+
+
 		question = q; // initialize question
 		metaData = md; // initialize metaData
 		imageName = img;
@@ -81,7 +81,7 @@ public class Question {
 				cnt++; // if choice is true, increment the counter
 			if (cnt > 1) {
 				multipleChoice = true; // if there are more than one true choice, update multipleChoice
-				break; // and exit loop
+				return; // and exit loop
 			}
 		}
 		multipleChoice = false;

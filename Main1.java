@@ -35,7 +35,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
 
-public class Main extends Application {
+public class Main1 extends Application {
 
 	private Scene exportScene;
 	private Scene readScene;
