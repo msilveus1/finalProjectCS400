@@ -57,11 +57,22 @@ public class Writer {
 			//This creates a new data JSON object
 			Question currentQues = (Question) k.next();
 			//Gets the next question to be read
-			data.put("meta-data",currentQues.getMetaData());
+			if (currentQues.getMetaData().equals("")){
+			   //Checking for an empty meta data string
+			   data.put("meta-data", "unused");
+			}else{
+			   //There is meta data
+			   data.put("meta-data",currentQues.getMetaData());
+			}
 			//This put the info into the json object
 			data.put("questionText", (String) currentQues.getQuestion());
 			data.put("topic:", currentQues.getTopic());
-			data.put("image", currentQues.getImageName());
+			if(currentQues.getImageName().equals(""){
+			  //push u
+		          data.put("image", "none");
+			}else{
+			  data.put("image", currentQues.getImageName());
+			}
 			//Makes a JSON array for the data input
 			JSONArray choices = new JSONArray();
 			ArrayList<String> choiceArray = currentQues.getChoiceList();
