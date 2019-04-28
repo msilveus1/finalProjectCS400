@@ -68,9 +68,10 @@ public class Writer {
 			data.put("questionText", (String) currentQues.getQuestion());
 			data.put("topic:", currentQues.getTopic());
 			if(currentQues.getImageName().equals(""){
-			  //push u
+			  //No image used format
 		          data.put("image", "none");
 			}else{
+			  //Else image name is used
 			  data.put("image", currentQues.getImageName());
 			}
 			//Makes a JSON array for the data input
