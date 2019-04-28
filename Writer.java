@@ -67,7 +67,7 @@ public class Writer {
 			//This put the info into the json object
 			data.put("questionText", (String) currentQues.getQuestion());
 			data.put("topic:", currentQues.getTopic());
-			if(currentQues.getImageName().equals(""){
+			if(currentQues.getImageName().equals("")){
 			  //No image used format
 		          data.put("image", "none");
 			}else{
@@ -76,7 +76,7 @@ public class Writer {
 			}
 			//Makes a JSON array for the data input
 			JSONArray choices = new JSONArray();
-			ArrayList<String> choiceArray = currentQues.getChoiceList();
+			ArrayList<Choice> choiceArray = currentQues.getChoiceList();
 			//Gets the array list of Questions
 			for(int i=0;i<choiceArray.size();i++) {
 				//This adds all the choices to an array

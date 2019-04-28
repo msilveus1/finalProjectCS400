@@ -27,10 +27,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
@@ -285,8 +287,10 @@ public class Main extends Application {
 
 		VBox vbox = new VBox(10); // create new vertical box
 		vbox.setPadding(new Insets(30, 30, 30, 30));
-		vbox.getChildren().add(new Label( // Add instructions to the vertical box
-				"Enter choice and choice answers. For choice answers, enter 'T' to indicate true and 'F' to indicate false"));
+		Text TA = new Text( // Add instructions to the vertical box
+                "Enter choice and choice answers. For choice answers, enter 'T' to indicate true and 'F' to indicate false");
+		TA.setWrappingWidth(540);
+		vbox.getChildren().add(TA);
 
 		vbox.getChildren().add(new Label("Press Confirm to add your question")); // add instructions to vBox
 		HBox menu = new HBox(45); // Create a new horizontal box
