@@ -58,7 +58,7 @@ public class Question {
 	 */
 	public Question(ArrayList<Choice> choice, String img, String q, String md, String t) {
 		choiceList = choice; // initialize choiceList
-		// image = new ImageView(new Image(img)); //initialize image //////BROKEN
+		image = new Image(img); //initialize image //////BROKEN
 
 
 		question = q; // initialize question

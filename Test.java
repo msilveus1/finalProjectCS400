@@ -78,7 +78,7 @@ class Test {
     }
     
     @org.junit.jupiter.api.Test
-    void test05_Reader_multipleChoice() {
+    void test05_Reader_correctFile() {
         Reader testReader = new Reader(new HashMap<String, ArrayList<Question>>());
         try{
             testReader.parseJSONFile("test.json");
@@ -93,6 +93,27 @@ class Test {
             fail("unexpected exception3");
         }
         
+        catch(Exception e) {
+            e.printStackTrace();
+            fail("unexpected exception4");
+        }
+    }
+    
+    
+    @org.junit.jupiter.api.Test
+    void test06_Reader_ImageNotExist() {
+        Reader testReader = new Reader(new HashMap<String, ArrayList<Question>>());
+        try{
+            testReader.parseJSONFile("test2.json");
+        }
+        catch(FileNotFoundException e) {
+            fail("unexpected exception1");
+        }
+        catch(JSONInputException e) {
+        }
+        catch(ParseException e) {
+            fail("unexpected exception3");
+        }        
         catch(Exception e) {
             e.printStackTrace();
             fail("unexpected exception4");

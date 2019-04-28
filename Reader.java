@@ -109,7 +109,7 @@ public class Reader {
 		try {
 			r.parseJSONFile("test.json");
 			Map<String, ArrayList<Question>> temp = r.getQuestionMap();
-			ArrayList<Question> test = temp.get("set");
+			ArrayList<Question> test = temp.get("hash table");
 			for (int i = 0; i < test.size(); i++) {
 				Question question = test.get(i);
 				ArrayList<Choice> temp2 = question.getChoiceList();
