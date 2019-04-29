@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -98,16 +99,25 @@ public class Main extends Application {
 		box.getChildren().addAll(exitProgramButton, readButton, exportButton);
 		readButton.setOnAction(e -> readFileScene(primaryStage, root));
 		root.setTop(box);
-		TextField numQuestions = new TextField("# of Q's");
+		
+		
+		
+		// Start a quiz
+		TextField numQuestions = new TextField("");
 		Button addQuestion = new Button("Add Question");
 		addQuestion.setOnAction(e -> addQuestionScreen(primaryStage, root));
 
 		// Center Hortizontal box
-		HBox center = new HBox();
-		center.getChildren().addAll(new Label("Enter number of questions: "), numQuestions);
+		VBox center = new VBox(10);
+		HBox promptNumQ = new HBox();
+		promptNumQ.getChildren().addAll(new Label("Enter number of questions: "), numQuestions);
+		center.getChildren().addAll(new Label("total number of questions in the database: " + this.countNumQuestion()), promptNumQ);
 		root.setAlignment(center, Pos.BOTTOM_CENTER);
 		root.setCenter(center);
 
+		
+		
+		
 		// TODO: Set action for button
 		// addQuestion.setAction();
 		box.getChildren().add(addQuestion);
@@ -124,15 +134,19 @@ public class Main extends Application {
 		vbox.getChildren().addAll(label, topics);
 		root.setMargin(vbox, new Insets(50, 30, 30, 30));
 
+		
 		Button startQuiz = new Button("Start Quiz ");
 		startQuiz.setMaxWidth(150);
 		root.setAlignment(startQuiz, Pos.CENTER);
 		root.setBottom(startQuiz);
+		//TODO
+//		startQuiz.setOnAction(e -> );
 
 		primaryStage.setScene(this.mainMenu);
 
 	}
 
+	
 	public void readFileScene(Stage primaryStage, BorderPane root) {
 		BorderPane pane = new BorderPane();
 		this.readScene = new Scene(pane, 500, 500);
@@ -426,6 +440,26 @@ public class Main extends Application {
 		return this.questionMap;
 	}
 
+	/**
+	 * helps get the total number of questions in data base
+	 * @return
+	 */
+	private int countNumQuestion() {
+	    Iterator<ArrayList<Question>> itr = this.questionMap.values().iterator();
+	    int numQ = 0;
+	    for(;itr.hasNext();) {
+	        numQ += itr.next().size();
+	    }
+	    return numQ;
+	}
+	
+	//TODO finish up this guy
+//	private void startQuiz (TextField TF, )
+	
+	
+	
+	
+	
 	public static void main(String[] args) {
 		launch(args);
 	}
