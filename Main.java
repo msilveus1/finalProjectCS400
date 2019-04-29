@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.json.simple.parser.ParseException;
@@ -26,6 +27,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -33,12 +35,16 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.control.Alert.AlertType;
 
 public class Main extends Application {
@@ -49,10 +55,10 @@ public class Main extends Application {
 	private Scene addQuestionScene;
 	private Map<String, ArrayList<Question>> questionMap;
 	private Reader reader;
-	private Writer writer;
 	private Stage stage;
 	private BorderPane mainPane;
-	// private Writer writer;
+	private Writer writer;
+	private Scene questionScene;
 
 	@Override
 	/**
@@ -106,13 +112,16 @@ public class Main extends Application {
 		box.getChildren().addAll(exitProgramButton, readButton, exportButton);
 		readButton.setOnAction(e -> readFileScene(primaryStage, root));
 		root.setTop(box);
-		TextField numQuestions = new TextField("# of Q's");
+		TextField numQuestions = new TextField();
 		Button addQuestion = new Button("Add Question");
 		addQuestion.setOnAction(e -> addQuestionScreen(primaryStage, root));
 
 		// Center Hortizontal box
-		HBox center = new HBox();
-		center.getChildren().addAll(new Label("Enter number of questions: "), numQuestions);
+		VBox center = new VBox(10);
+		HBox promptNumQ = new HBox();
+		promptNumQ.getChildren().addAll(new Label("Enter number of questions: "), numQuestions);
+		center.getChildren().addAll(new Label("Total number of questions in the database: " + this.countNumQuestion()),
+				promptNumQ);
 		root.setAlignment(center, Pos.BOTTOM_CENTER);
 		root.setCenter(center);
 
@@ -139,7 +148,7 @@ public class Main extends Application {
 		startQuiz.setMaxWidth(150);
 		root.setAlignment(startQuiz, Pos.CENTER);
 		root.setBottom(startQuiz);
-
+		startQuiz.setOnAction(e -> startQuiz(numQuestions, topics));
 		primaryStage.setScene(this.mainMenu);
 
 	}
@@ -210,57 +219,62 @@ public class Main extends Application {
 	}
 
 	public void exportFileScene(Stage primaryStage, BorderPane root) {
+		// Setting up the scene for export
 		BorderPane pane = new BorderPane();
 		this.exportScene = new Scene(pane, 500, 500);
-		Button exportButton = new Button("Export Quiz");
-		exportButton.setMaxWidth(150);
-		HBox bottom = new HBox(100);
+		// This is for the buttons
+		HBox bottom = new HBox(20);
+		// This is for the label and the text field
+		VBox center = new VBox(7);
+		// Setting up the buttons
 		Button button = new Button("Back");
 		button.setOnAction(e -> this.mainMenu(this.stage, this.mainPane));
 		button.setMaxWidth(150);
 		TextField text = new TextField();
-		VBox center = new VBox(7);
+		// Stylization
+
+		DropShadow ds = new DropShadow();
+		ds.setOffsetY(3.0);
+		ds.setOffsetX(3.0);
+		ds.setColor(Color.GRAY);
+		text.setEffect(ds);
+		// Creating the text field parameters
 		text.setMaxWidth(250);
 		text.setMinWidth(100);
-		Label prompt = new Label("Please enter the json file name:");
+		button.setEffect(ds);
+
+		// Adding about a new label
+		Label prompt = new Label("Please enter the JSON file name:");
 		center.getChildren().add(prompt);
 		center.getChildren().add(text);
 		FileChooser dc = new FileChooser();
 		dc.setInitialDirectory(new File("."));
-		File[] file = new File[1];
-		String[] strings = new String[1];
-		Button chooseDirectory = new Button("Choose Directory");
-		//it works
-		chooseDirectory.setOnAction(e-> {try {writer.output(dc.getInitialDirectory().getAbsolutePath(), text.getText());} catch(IOException e2) {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setContentText("Warning: File could not be read. Please edit your file and try again.");
-			alert.show();
-		}});
-		
-		// Creation of a new writer
-		Writer k = new Writer(questionMap);
-		String output = strings[0];
-		// Export button function set
-		exportButton.setOnAction(e -> {
+		Button chooseDirectory = new Button("Export to File");
+		// it works
+		chooseDirectory.setOnAction(e -> {
 			try {
-				String path;
-				if (file != null) {
-					path = file[0].getAbsolutePath();
-					k.output(path, output);
-				} 
-				
-			} catch (IOException e1) {
+				writer.output(dc.getInitialDirectory().getAbsolutePath(), text.getText());
+				Alert alert = new Alert(AlertType.CONFIRMATION);
+				alert.setContentText("File exported sucessfully to local project folder ");
+				alert.show();
+				this.mainMenu(this.stage, this.mainPane);
+
+			} catch (IOException e2) {
 				Alert alert = new Alert(AlertType.ERROR);
 				alert.setContentText("Warning: File could not be read. Please edit your file and try again.");
 				alert.show();
 			}
 		});
-		bottom.setPadding(new Insets(10, 10, 10, 10));
+		chooseDirectory.setEffect(ds);
+		// Creation of a new writer
+		Writer k = new Writer(questionMap);
+		// Export button function set
+		bottom.setPadding(new Insets(20, 20, 20, 20));
 		chooseDirectory.setAlignment(Pos.BOTTOM_RIGHT);
-		bottom.getChildren().addAll(chooseDirectory, exportButton);
+		bottom.getChildren().addAll(button, chooseDirectory);
+		center.setPadding(new Insets(160, 0, 0, 130));
 		pane.setBottom(bottom);
-		pane.setCenter(text);
-		exportButton.setOnAction(e -> System.out.println(file + output));
+		pane.setCenter(center);
 		primaryStage.setScene(this.exportScene);
 
 	}
@@ -433,7 +447,7 @@ public class Main extends Application {
 				return; // exit method
 			}
 		}
-		if(tcnt<=0) {
+		if (tcnt <= 0) {
 			Alert alert = new Alert(AlertType.ERROR); // confirmation message
 			alert.setContentText( // display that question added sucessfully
 					"Please make sure that there is at least one correct answer to the question.");
@@ -454,16 +468,6 @@ public class Main extends Application {
 					alert.show();
 					this.mainMenu(this.stage, this.mainPane);
 				} else {
-					ArrayList<Question> checkArray = this.questionMap.get(t.getText()); // check the questionArray
-					for (int index = 0; index < checkArray.size(); index++) { // loop through array to find duplicate
-						if (checkArray.get(index).getQuestion().equals(q.getText())) {
-							Alert alert = new Alert(AlertType.ERROR);
-							alert.setContentText( // show error message and exit method if duplicate exists
-									"Question already exists, duplicate questions are not allowed. Please enter another question or press back to exit");
-							alert.show();
-							this.addQuestionScreen(this.stage, this.mainPane); // return to add question screen if error
-						}
-					}
 					this.questionMap.get(t.getText()).add(question); // if map has topic, add to question list
 					Alert alert = new Alert(AlertType.CONFIRMATION); // show confirmation message
 					alert.setContentText(
@@ -491,15 +495,6 @@ public class Main extends Application {
 				this.mainMenu(this.stage, this.mainPane);
 			} else {
 				ArrayList<Question> checkArray = this.questionMap.get(t.getText()); // get questions list
-				for (int index = 0; index < checkArray.size(); index++) { // iterate to check for duplicate
-					if (checkArray.get(index).getQuestion().equals(q.getText())) {
-						Alert alert = new Alert(AlertType.ERROR);
-						alert.setContentText( // print error message if duplicate question is found
-								"Question already exists, duplicate questions are not allowed. Please enter another question or press back to exit");
-						alert.show();
-						this.addQuestionScreen(this.stage, this.mainPane); // return to add question screen if error
-					}
-				}
 				this.questionMap.get(t.getText()).add(question); // if map has topic, add to question list
 				Alert alert = new Alert(AlertType.CONFIRMATION); // display confirmation message
 				alert.setContentText(
@@ -512,6 +507,140 @@ public class Main extends Application {
 
 	private Map<String, ArrayList<Question>> getMap() {
 		return this.questionMap;
+	}
+
+	/**
+	 * helps get the total number of questions in data base
+	 * 
+	 * @return
+	 */
+	private int countNumQuestion() {
+		Iterator<ArrayList<Question>> itr = this.questionMap.values().iterator();
+		int numQ = 0;
+		for (; itr.hasNext();) {
+			numQ += itr.next().size();
+		}
+		return numQ;
+	}
+
+	private void startQuiz(TextField TF, ListView<CheckBox> LV) {
+		try {
+			ArrayList<String> quizTopics = new ArrayList<String>();
+			ObservableList<CheckBox> topicList = LV.getItems();
+			for (int i = 0; i < topicList.size(); i++) {
+				if (topicList.get(i).isSelected())
+					quizTopics.add(topicList.get(i).getText());
+			}
+			ArrayList<Question> quizQuestions;
+			if (quizTopics.size() == 0) {
+				throw new IllegalArgumentException();
+			}
+			int quizQNum = Integer.parseInt(TF.getText());
+			quizQuestions = getQuestionHelper(quizQNum, quizTopics);
+			int counter = 1;
+			quizScene(this.stage, this.mainPane, counter, quizQuestions);
+		} catch (NumberFormatException e) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setContentText("Please enter an integer for the number of questions wanted");
+			alert.show(); // display error message and exit
+			return;
+		} catch (IllegalArgumentException e) {
+			Alert alert = new Alert(AlertType.ERROR);
+			alert.setContentText(
+					"No topic selected. Please select a topic. If there are no topics available, read in a JSON file or add in a topic manually");
+			alert.show(); // display error message and exit
+			return;
+		}
+
+	}
+
+	private ArrayList<Question> getQuestionHelper(int numQ, ArrayList<String> quizTopics) {
+		ArrayList<Question> dataBase = new ArrayList<Question>();
+		ArrayList<Question> toReturn = new ArrayList<Question>();
+
+		for (int i = 0; i < quizTopics.size(); i++) {
+			dataBase.addAll(this.questionMap.get(quizTopics.get(i)));
+		}
+		for (int i = 0; i < dataBase.size(); i++) {
+
+		}
+		if (numQ > dataBase.size())
+			numQ = dataBase.size();
+
+		// this is a try of stream
+		for (int i = 0; i < numQ; i++) {
+			int index = (int) (Math.random() * (dataBase.size()));
+			toReturn.add(dataBase.get(index));
+			dataBase.remove(index);
+		}
+		return toReturn;
+	}
+
+	private void quizScene(Stage primaryStage, BorderPane root, int counter, ArrayList<Question> quizQuestion) {
+		BorderPane pane;
+		Scene scene;
+
+		if (counter > 1 && counter < quizQuestion.size()) {
+			pane = new BorderPane();
+			scene = new Scene(pane, 700, 700);
+			Label questionLabel = new Label(counter + ".)  " + quizQuestion.get(counter - 1).getQuestion());
+			questionLabel.setMaxHeight(100);
+			pane.setTop(questionLabel);
+			HBox buttonBox = new HBox(10);
+			Button nextButton = new Button("Next Question");
+			Button backButton = new Button("Back ");
+			Button exit = new Button("Exit");
+			int next = counter + 1;
+			int back = counter - 1;
+			nextButton.setOnAction(e -> quizScene(this.stage, this.mainPane, next, quizQuestion));
+			backButton.setOnAction(e -> quizScene(this.stage, this.mainPane, back, quizQuestion));
+			Button finish = new Button("Finish");
+			buttonBox.getChildren().addAll(exit, finish,backButton, nextButton);
+			pane.setBottom(buttonBox);
+			System.out.println(counter);
+			this.stage.setScene(scene);
+		}
+		
+		if (counter == 1) {
+			pane = new BorderPane();
+			scene = new Scene(pane, 700, 700);
+			Label questionLabel = new Label(counter + ".)  " + quizQuestion.get(counter - 1).getQuestion());
+			questionLabel.setMaxHeight(100);
+			pane.setTop(questionLabel);
+			HBox buttonBox = new HBox(10);
+			Button nextButton = new Button("Next Question");
+			Button exit = new Button("Exit");
+			int next = counter + 1;
+			int back = counter - 1;
+			nextButton.setOnAction(e -> quizScene(this.stage, this.mainPane, next, quizQuestion));
+			Button finish = new Button("Finish");
+			buttonBox.getChildren().addAll(exit, finish, nextButton);
+			pane.setBottom(buttonBox);
+			this.stage.setScene(scene);
+		}
+		
+		if (counter == quizQuestion.size()) {
+			pane = new BorderPane();
+			scene = new Scene(pane, 700, 700);
+			Label questionLabel = new Label(counter + ".)  " + quizQuestion.get(counter - 1).getQuestion());
+			questionLabel.setMaxHeight(100);
+			pane.setTop(questionLabel);
+			HBox buttonBox = new HBox(10);
+			Button submit = new Button("Submit Quiz");
+			Button backButton = new Button("Back ");
+			Button exit = new Button("Exit");
+			int next = counter + 1;
+			int back = counter - 1;
+			//Change submit
+			submit.setOnAction(e -> quizScene(this.stage, this.mainPane, next, quizQuestion));
+			backButton.setOnAction(e -> quizScene(this.stage, this.mainPane, back, quizQuestion));
+			Button finish = new Button("Finish");
+			buttonBox.getChildren().addAll(exit, backButton, submit);
+			pane.setBottom(buttonBox);
+			counter++;
+			this.stage.setScene(scene);
+		}
+
 	}
 
 	public static void main(String[] args) {
