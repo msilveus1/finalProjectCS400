@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -97,6 +99,25 @@ public class Main extends Application {
         exportButton.setMaxWidth(150);
         TextField text = new TextField();
         text.setMaxWidth(250);
+        
+        
+        //prompt for saving before closing window
+        primaryStage.setOnCloseRequest(e -> {
+            Alert alert = new Alert(AlertType.CONFIRMATION);
+            alert.setTitle("Save your questions before leaving");
+            alert.setHeaderText("Do you want to save all your questions before leaving?");
+            alert.setContentText("OK to save your questions");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == ButtonType.OK){
+                // ... user chose OK
+            } else {
+                // ... user chose CANCEL or closed the dialog
+            }
+            
+            System.exit(0);
+            
+        });
 
         exportButton.setOnAction(e -> exportFileScene(primaryStage, root));
         // Sets up read in screen
@@ -531,6 +552,9 @@ public class Main extends Application {
     private void startQuiz (TextField TF, ListView<CheckBox> LV) {
         try {
             int quizQNum = Integer.parseInt(TF.getText());
+            if(quizQNum < 1) {
+                throw new NumberFormatException();
+            }
             ArrayList<String> quizTopics = new ArrayList<String>();
             ObservableList<CheckBox> topicList = LV.getItems();
             for(int i = 0; i < topicList.size(); i++) {
@@ -543,12 +567,14 @@ public class Main extends Application {
         }
         catch(NumberFormatException e) {
             Alert alert = new Alert(AlertType.ERROR);
-            alert.setContentText("Please enter an integer for the number of questions wanted");
+            alert.setContentText("Please enter a positive integer for the number of questions wanted");
             alert.show(); // display error message and exit
             return;
         }
         
     }
+    
+//    private void quizScene (Stage primaryStage, BorderPane root, )
     
     private ArrayList<Question> getQuestionHelper (int numQ, ArrayList<String> quizTopics){
         ArrayList<Question> dataBase = new ArrayList<Question>();
