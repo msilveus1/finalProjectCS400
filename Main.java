@@ -1,4 +1,4 @@
-package application;
+//package application;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.json.simple.parser.ParseException;
 
@@ -103,16 +105,23 @@ public class Main extends Application {
         box.getChildren().addAll(exitProgramButton, readButton, exportButton);
         readButton.setOnAction(e -> readFileScene(primaryStage, root));
         root.setTop(box);
-        TextField numQuestions = new TextField("# of Q's");
+        
+        
+        // Start a quiz
+        TextField numQuestions = new TextField("");
         Button addQuestion = new Button("Add Question");
         addQuestion.setOnAction(e -> addQuestionScreen(primaryStage, root));
 
         // Center Hortizontal box
-        HBox center = new HBox();
-        center.getChildren().addAll(new Label("Enter number of questions: "), numQuestions);
+        VBox center = new VBox(10);
+        HBox promptNumQ = new HBox();
+        promptNumQ.getChildren().addAll(new Label("Enter number of questions: "), numQuestions);
+        center.getChildren().addAll(new Label("total number of questions in the database: " + this.countNumQuestion()), promptNumQ);
         root.setAlignment(center, Pos.BOTTOM_CENTER);
         root.setCenter(center);
-
+        
+        
+        
         // TODO: Set action for button
         // addQuestion.setAction();
         box.getChildren().add(addQuestion);
@@ -136,7 +145,7 @@ public class Main extends Application {
         startQuiz.setMaxWidth(150);
         root.setAlignment(startQuiz, Pos.CENTER);
         root.setBottom(startQuiz);
-
+        startQuiz.setOnAction(e -> startQuiz(numQuestions, topics));
         primaryStage.setScene(this.mainMenu);
 
     }
@@ -232,20 +241,20 @@ public class Main extends Application {
     
         String output = text.getText();
         // Export button function set
-        exportButton.setOnAction(e -> {
-            try {
-                String path;
-                if (file != null) {
-                    path = file[0].getAbsolutePath();
-                    k.output(path, output);
-                } 
-                
-            } catch (IOException e1) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setContentText("Warning: File could not be read. Please edit your file and try again.");
-                alert.show();
-            }
-        });
+//      exportButton.setOnAction(e -> {
+//          try {
+//              String path;
+//              if (file != null) {
+//                  path = file[0].getAbsolutePath();
+//                  k.output(path, output);
+//              } 
+//              
+//          } catch (IOException e1) {
+//              Alert alert = new Alert(AlertType.ERROR);
+//              alert.setContentText("Warning: File could not be read. Please edit your file and try again.");
+//              alert.show();
+//          }
+//      });
         bottom.setPadding(new Insets(10, 10, 10, 10));
         chooseDirectory.setAlignment(Pos.BOTTOM_RIGHT);
         bottom.getChildren().addAll(chooseDirectory, exportButton);
@@ -504,6 +513,59 @@ public class Main extends Application {
         return this.questionMap;
     }
 
+    /**
+     * helps get the total number of questions in data base
+     * @return
+     */
+    private int countNumQuestion() {
+        Iterator<ArrayList<Question>> itr = this.questionMap.values().iterator();
+        int numQ = 0;
+        for(;itr.hasNext();) {
+            numQ += itr.next().size();
+        }
+        return numQ;
+    }
+    
+    
+    
+    private void startQuiz (TextField TF, ListView<CheckBox> LV) {
+        try {
+            int quizQNum = Integer.parseInt(TF.getText());
+            ArrayList<String> quizTopics = new ArrayList<String>();
+            ObservableList<CheckBox> topicList = LV.getItems();
+            for(int i = 0; i < topicList.size(); i++) {
+                if(topicList.get(i).isSelected())
+                    quizTopics.add(topicList.get(i).getText());
+            }
+            ArrayList<Question> quizQuestions;
+            quizQuestions = getQuestionHelper(quizQNum, quizTopics);
+            System.out.print(quizQuestions);
+        }
+        catch(NumberFormatException e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setContentText("Please enter an integer for the number of questions wanted");
+            alert.show(); // display error message and exit
+            return;
+        }
+        
+    }
+    
+    private ArrayList<Question> getQuestionHelper (int numQ, ArrayList<String> quizTopics){
+        ArrayList<Question> dataBase = new ArrayList<Question>();
+        for(int i = 0; i < quizTopics.size(); i++) {
+            dataBase.addAll(this.questionMap.get(quizTopics.get(i)));
+        }
+        
+        //this is a try of stream
+        Random rand = new Random();
+        ArrayList<Question> quizQuestion = (ArrayList<Question>) rand.
+                ints(numQ, 0, dataBase.size()).
+                mapToObj(i -> dataBase.get(i)).
+                collect(Collectors.toList());
+        return quizQuestion;
+    }
+    
+    
     public static void main(String[] args) {
         launch(args);
     }
