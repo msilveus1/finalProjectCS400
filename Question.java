@@ -142,22 +142,22 @@ public class Question {
 		this.choiceList = choiceList;
 	}
 
-//	/**
-//	 * Accessor method image field
-//	 * 
-//	 * @return image
-//	 */
-//	public ImageView getImage() {
-//		return image;
-//	}
-//
-//	/**
-//	 * Mutator method for image field
-//	 * @param image
-//	 */
-//	public void setImage(ImageView image) {
-//		this.image = image;
-//	}
+	/**
+	 * Accessor method image field
+	 * 
+	 * @return image
+	 */
+	public Image getImage() {
+		return image;
+	}
+
+	/**
+	 * Mutator method for image field
+	 * @param image
+	 */
+	public void setImage(Image image) {
+		this.image = image;
+	}
 
 	/**
 	 * Accessor method for question field
