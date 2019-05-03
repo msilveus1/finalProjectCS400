@@ -1,6 +1,7 @@
+package application;
 //
 // Title: (Final Project QuizGenerator: Choice Class)
-// Files: (Question.java, GUI.java, Main.java, QuizGenerator.java)
+// Files: (Question.java, Reader.java, Main.java, Writer.java)
 // Course: (CS400, Semester 2, and 2019)
 //
 // Author: (Rei Bezat, Viknesh Ravichandar, Matthew Silveus, Siyu Cai)

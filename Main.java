@@ -12,6 +12,7 @@ import java.util.TreeMap;
 
 import org.json.simple.parser.ParseException;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,6 +23,7 @@ import javafx.geometry.Pos;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -32,6 +34,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
@@ -44,21 +47,26 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.ImageView;
 import javafx.scene.control.Alert.AlertType;
 
 public class Main extends Application {
 
-	private Scene exportScene;
-	private Scene readScene;
-	private Scene mainMenu;
-	private Scene addQuestionScene;
-	private Map<String, ArrayList<Question>> questionMap;
-	private Reader reader;
-	private Stage stage;
-	private BorderPane mainPane;
-	private Writer writer;
-	private Scene questionScene;
+	private Scene exportScene; // This field stores the scene when user wants to export a file
+	private Scene readScene; // This field stores the scene when the user wants to read a file
+	private Scene mainMenu; // This field stores the scene for the main menu
+	private Scene addQuestionScene; // this field stores the scene for the add question scene
+	private Map<String, ArrayList<Question>> questionMap; // this field stores the questions database
+	private Reader reader; // this field stores the reader that will be used to read a JSON file
+	private Stage stage; // this field stores the primary stage
+	private BorderPane mainPane; // this field stores the root borderpane
+	private Writer writer; // this field stores the writer that will be used to write out a JSON file
+	private Scene questionScene; // this field stores the scene that when the quiz starts
+	private String correctChoice; // this field stores the correct choice for each question in the quiz
+	private int answered; // this field stores the number of answered questions in a quiz
+	private int correct; // this field stores the numberof correct answered questions in a quiz
 
 	@Override
 	/**
@@ -75,7 +83,13 @@ public class Main extends Application {
 			this.mainMenu = scene;
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			// This line may not be neccessary
-
+			// Set close
+			primaryStage.setOnCloseRequest(e -> {
+				if (!this.questionMap.isEmpty())
+					promptSaveHelper();
+				else
+					System.exit(0);
+			});
 			mainMenu(primaryStage, root);
 			// Populating the main menu
 			primaryStage.setTitle("Quiz Generator");
@@ -92,13 +106,18 @@ public class Main extends Application {
 
 		stage = primaryStage;
 		this.mainPane = root;
-		HBox box = new HBox();
-		VBox vertical = new VBox();
+		HBox box = new HBox(5);
+		VBox vertical = new VBox(10);
 
-		// This will handle the exiting of the program
+		// This will handle the exiting of the program. Prompts user option to save file if database is not empty
 		Button exitProgramButton = new Button("Exit");
 		exitProgramButton.setMaxWidth(150);
-		exitProgramButton.setOnAction(e -> System.exit(0));
+		exitProgramButton.setOnAction(e -> {
+			if (!this.questionMap.isEmpty())
+				promptSaveHelper();
+			else
+				System.exit(0);		
+		});
 		// Handles the switching to the export screen
 		Button exportButton = new Button("Export File");
 		exportButton.setMaxWidth(150);
@@ -140,7 +159,8 @@ public class Main extends Application {
 		VBox vbox = new VBox();
 		root.setLeft(vbox);
 		topics.setItems(topic);
-		Label label = new Label("Topic List. Click to select topics");
+		Label label = new Label(
+				"Topic List. Click to select topics\n If there are no topics, add a question or import a file.");
 		vbox.getChildren().addAll(label, topics);
 		root.setMargin(vbox, new Insets(50, 30, 30, 30));
 
@@ -153,10 +173,23 @@ public class Main extends Application {
 
 	}
 
+	/**
+	 * This is the scene that will be displayed when the user wants to read in a
+	 * JSON file
+	 * 
+	 * @param primaryStage
+	 * @param root
+	 */
 	public void readFileScene(Stage primaryStage, BorderPane root) {
 		BorderPane pane = new BorderPane();
 		this.readScene = new Scene(pane, 500, 500);
-
+		// Set close
+		primaryStage.setOnCloseRequest(e -> {
+			if (!this.questionMap.isEmpty())
+				promptSaveHelper();
+			else
+				System.exit(0);
+		});
 		HBox bottom = new HBox(10);
 		Button button = new Button("Back");
 		button.setMaxWidth(150);
@@ -165,11 +198,18 @@ public class Main extends Application {
 
 		text.setMaxWidth(250);
 		text.setMinWidth(100);
-		Label prompt = new Label("Please enter the json file name:");
+		Label prompt = new Label("Please enter the JSON file name: \nPress Submit to read JSON file.");
 		center.getChildren().add(prompt);
 		center.getChildren().add(text);
 		Button submitButton = new Button("Submit");
 		submitButton.setAlignment(Pos.BOTTOM_RIGHT);
+		// Stylization
+		DropShadow ds = new DropShadow();
+		ds.setOffsetY(3.0);
+		ds.setOffsetX(3.0);
+		ds.setColor(Color.LIGHTGRAY);
+		button.setEffect(ds);
+		submitButton.setEffect(ds);
 		bottom.getChildren().addAll(button, submitButton);
 
 		HBox blank = new HBox(500);
@@ -202,23 +242,45 @@ public class Main extends Application {
 				alert.setContentText("Warning: File could not be read. Please edit your file and try again.");
 				alert.show();
 				readFileScene(primaryStage, root);
-
 			} catch (ParseException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (JSONInputException e1) {
 				Alert alert = new Alert(AlertType.ERROR);
 				alert.setContentText(
-						"Warning: JSON File incorrectly formatted. Please edit your JSON File to match the correct file input, then try again.");
+						"There was an error in parsing your JSON File. Please make sure that your JSON File conforms to JSON formatting guidelines.");
 				alert.show();
-				readFileScene(primaryStage, root);
+				mainMenu(primaryStage, root);
+			} catch (JSONInputException e1) {
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setContentText(e1.getMessage()
+						+ " Any correctly formatted questions have been successfully added to the question bank.");
+				alert.show();
+				mainMenu(primaryStage, root);
+			} catch (NullPointerException e1) {
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setContentText(
+						"The JSON File is missing some of the required content to run the quiz. Make sure that the JSON File contains: questionsArray, meta-data, questionText, topic, image, choiceArray, isCorrect, and choice objects.");
+				alert.show();
+				mainMenu(primaryStage, root);
 			}
 		});
 
 		primaryStage.setScene(this.readScene);
 	}
 
+	/**
+	 * This is the scene when a file is desired to be written.
+	 * 
+	 * @param primaryStage
+	 * @param root
+	 */
 	public void exportFileScene(Stage primaryStage, BorderPane root) {
+		// Set close
+		primaryStage.setOnCloseRequest(e -> {
+			if (!this.questionMap.isEmpty())
+				promptSaveHelper();
+			else
+				System.exit(0);
+		});
+
 		// Setting up the scene for export
 		BorderPane pane = new BorderPane();
 		this.exportScene = new Scene(pane, 500, 500);
@@ -237,20 +299,20 @@ public class Main extends Application {
 		ds.setOffsetY(3.0);
 		ds.setOffsetX(3.0);
 		ds.setColor(Color.GRAY);
-		text.setEffect(ds);
 		// Creating the text field parameters
 		text.setMaxWidth(250);
 		text.setMinWidth(100);
 		button.setEffect(ds);
 
 		// Adding about a new label
-		Label prompt = new Label("Please enter the JSON file name:");
+		Label prompt = new Label("Please enter the JSON file name and hit submit when done:");
 		center.getChildren().add(prompt);
 		center.getChildren().add(text);
 		FileChooser dc = new FileChooser();
 		dc.setInitialDirectory(new File("."));
 		Button chooseDirectory = new Button("Export to File");
 		// it works
+		// This is for essentially the submit button
 		chooseDirectory.setOnAction(e -> {
 			try {
 				writer.output(dc.getInitialDirectory().getAbsolutePath(), text.getText());
@@ -286,41 +348,58 @@ public class Main extends Application {
 	 * @param root
 	 */
 	public void addQuestionScreen(Stage primaryStage, BorderPane root) {
-
+		// This sets up the GUI
 		BorderPane pane = new BorderPane();
 		this.addQuestionScene = new Scene(pane, 500, 500);
-
+		// Set close action
+		primaryStage.setOnCloseRequest(e -> {
+			if (!this.questionMap.isEmpty())
+				promptSaveHelper();
+			else
+				System.exit(0);
+		});
+		// Creates the box for the questions
 		VBox box = new VBox(10);
 		box.setPadding(new Insets(20, 20, 20, 20));
+		// Adding the new label
 		box.getChildren().add(new Label("Enter the Topic:"));
 		TextField topicField = new TextField();
 		box.getChildren().add(topicField);
-
+		// Adding the next label and text field for question
 		box.getChildren().add(new Label("Enter the Question: "));
 		TextField questionField = new TextField();
 		box.getChildren().add(questionField);
-
+		// setting up the text field for number of choices
 		box.getChildren().add(new Label("Enter number of choices for question: "));
 		TextField choiceText = new TextField();
 		box.getChildren().add(choiceText);
-
+		// Adding meta data
 		box.getChildren().add(new Label("(Optional) Enter meta-data for question: "));
 		TextField metaData = new TextField();
 		box.getChildren().add(metaData);
-
+		// adding the image setting the label and text field
 		box.getChildren().add(new Label("(Optional) Enter image file for the question: "));
 		TextField image = new TextField();
 		box.getChildren().add(image);
-
+		// This sets up more hbox for the buttons
 		HBox buttonBox = new HBox(10);
 		Button submit = new Button("Submit");
 		Button back = new Button("Back");
+		// Stylization
+		DropShadow ds = new DropShadow();
+		ds.setOffsetY(3.0);
+		ds.setOffsetX(3.0);
+		ds.setColor(Color.LIGHTGREY);
+		back.setEffect(ds);
+		submit.setEffect(ds);
 		buttonBox.getChildren().addAll(back, submit);
+		// Setting padding for the buttons
+		buttonBox.setPadding(new Insets(10, 10, 10, 10));
 		submit.setOnAction(e -> checkInput(choiceText, questionField, topicField, image, metaData));
 		back.setOnAction(e -> this.mainMenu(this.stage, this.mainPane));
 
 		pane.setBottom(buttonBox);
-
+		// sets up the pane
 		pane.setCenter(box);
 		primaryStage.setScene(this.addQuestionScene);
 	}
@@ -383,15 +462,20 @@ public class Main extends Application {
 		VBox vbox = new VBox(10); // create new vertical box
 		vbox.setPadding(new Insets(30, 30, 30, 30));
 		vbox.getChildren().add(new Label( // Add instructions to the vertical box
-				"Enter choice and choice answers. For choice answers, enter 'T' to indicate true and 'F' to indicate false"));
+				"Enter choice and choice answers. For choice answers, enter 'T' to indicate true and 'F' to indicate false \n \n Warning : All Progress will be lost if you press back without adding question. \n"));
 
-		vbox.getChildren().add(new Label("Press Confirm to add your question")); // add instructions to vBox
+		vbox.getChildren().add(new Label("Press Confirm to add your question \n \n")); // add instructions to vBox
 		HBox menu = new HBox(45); // Create a new horizontal box
 		Label choiceInstruction = new Label("Enter answer choices: "); // add instructions to horizontal box
-		Label choiceAnswerInstruction = new Label("Enter choice validity: ");// add instructions to horizontal box
+		Label choiceAnswerInstruction = new Label(
+				"Enter 'T' for correct and 'F' for incorrect: \n Only one correct answer is allowed");// add
+																										// instructions
+																										// to horizontal
+																										// box
 		menu.getChildren().addAll(choiceInstruction, choiceAnswerInstruction);
 		vbox.getChildren().add(menu);
-
+		// Setting padding for the buttons
+		buttonBox.setPadding(new Insets(10, 10, 10, 10));
 		for (int count = 0; count < s; count++) { // based on number of choices
 			HBox temp = new HBox(15); // create a new horizontal box that contains a textfield and combobox
 			temp.getChildren().add(new TextField());
@@ -505,8 +589,14 @@ public class Main extends Application {
 		}
 	}
 
+	/**
+	 * This is an accessor method that returns the map that represents the questions
+	 * database
+	 * 
+	 * @return
+	 */
 	private Map<String, ArrayList<Question>> getMap() {
-		return this.questionMap;
+		return this.questionMap; // returns the questions database map
 	}
 
 	/**
@@ -523,25 +613,48 @@ public class Main extends Application {
 		return numQ;
 	}
 
+	/**
+	 * Extracting number of questions entered by the user in the main menu text
+	 * field
+	 * 
+	 * @param TF This is a text field that is being passed in
+	 * @param LV List of all topics selected
+	 */
 	private void startQuiz(TextField TF, ListView<CheckBox> LV) {
 		try {
+			// Creating a list of quizTopics
 			ArrayList<String> quizTopics = new ArrayList<String>();
+			// getting the list of check boxes
 			ObservableList<CheckBox> topicList = LV.getItems();
+			// Checks if the check box is selected
 			for (int i = 0; i < topicList.size(); i++) {
 				if (topicList.get(i).isSelected())
+					// Adds the topic to the list if selected
 					quizTopics.add(topicList.get(i).getText());
 			}
+			// Sets up an array for quiz question
 			ArrayList<Question> quizQuestions;
 			if (quizTopics.size() == 0) {
+				// If no topic is selected throw illegal argument exception
 				throw new IllegalArgumentException();
 			}
+			// Gets the integer from the the text field
 			int quizQNum = Integer.parseInt(TF.getText());
+			if (quizQNum < 1) {
+				// Entered number must be positive integer
+				throw new NumberFormatException();
+			}
+			// if all input is valid then it calls quiz questions method
 			quizQuestions = getQuestionHelper(quizQNum, quizTopics);
+			// Sets up all the numbers needed for the counters
 			int counter = 1;
-			quizScene(this.stage, this.mainPane, counter, quizQuestions);
+			this.answered = 0;
+			this.correct = 0;
+			// Calls the quiz scene with the right numbers
+			quizScene(this.stage, this.mainPane, counter, quizQuestions, answered, correct);
 		} catch (NumberFormatException e) {
 			Alert alert = new Alert(AlertType.ERROR);
-			alert.setContentText("Please enter an integer for the number of questions wanted");
+			alert.setContentText("Please enter a positive integer for the number of questions wanted");
 			alert.show(); // display error message and exit
 			return;
 		} catch (IllegalArgumentException e) {
@@ -554,92 +667,515 @@ public class Main extends Application {
 
 	}
 
+	/**
+	 * This is the class that has the algorithm to get the random question.
+	 * 
+	 * @param numQ       number of questions selected by the user
+	 * @param quizTopics a list of all quiz topics selected
+	 * @return a randomized list of questions.
+	 */
 	private ArrayList<Question> getQuestionHelper(int numQ, ArrayList<String> quizTopics) {
+		// These are setting up the lists of questions from our topics
 		ArrayList<Question> dataBase = new ArrayList<Question>();
 		ArrayList<Question> toReturn = new ArrayList<Question>();
-
+		// We are adding all the question topics to the database
 		for (int i = 0; i < quizTopics.size(); i++) {
 			dataBase.addAll(this.questionMap.get(quizTopics.get(i)));
 		}
-		for (int i = 0; i < dataBase.size(); i++) {
-
-		}
+		// if the number of questions is larger that the data bas size we reset it to be
+		// the right size
 		if (numQ > dataBase.size())
 			numQ = dataBase.size();
-
-		// this is a try of stream
+		// this generating a random index from the data base size and then we get
+		// whatever is in
+		// random index and add it to question list
 		for (int i = 0; i < numQ; i++) {
 			int index = (int) (Math.random() * (dataBase.size()));
 			toReturn.add(dataBase.get(index));
 			dataBase.remove(index);
 		}
+		// This returns the list of questions.
 		return toReturn;
 	}
 
-	private void quizScene(Stage primaryStage, BorderPane root, int counter, ArrayList<Question> quizQuestion) {
-		BorderPane pane;
+	/**
+	 * This is the method that sets up the quiz scene
+	 * 
+	 * @param primaryStage this is passed in from main
+	 * @param root         this is the pane from the last scene
+	 * @param counter      this counts all the questions that we have gone through
+	 * @param quizQuestion
+	 * @param answered
+	 * @param correct
+	 */
+	private void quizScene(Stage primaryStage, BorderPane root, int counter, ArrayList<Question> quizQuestion,
+			int answered, int correct) {
+		// Sets up new Scene and border pane
+		BorderPane pane = new BorderPane();
 		Scene scene;
 
+		// Setting up close request
+		primaryStage.setOnCloseRequest(e -> {
+			if (!this.questionMap.isEmpty())
+				promptSaveHelper();
+			else
+				System.exit(0);
+		});
 		if (counter > 1 && counter < quizQuestion.size()) {
 			pane = new BorderPane();
-			scene = new Scene(pane, 700, 700);
+			scene = new Scene(pane, 1000, 800);
 			Label questionLabel = new Label(counter + ".)  " + quizQuestion.get(counter - 1).getQuestion());
 			questionLabel.setMaxHeight(100);
-			pane.setTop(questionLabel);
+			// Sets the choice and question box padding
+			VBox questionAndChoiceBox = new VBox(10);
+			questionAndChoiceBox.setPadding(new Insets(10, 10, 10, 10));
+			questionAndChoiceBox.getChildren()
+					.add(new Label("Select a choice and press Submit to view the results of the question."));
+			questionAndChoiceBox.getChildren().add(new Label(
+					"INSTRUCTIONS: You must submit the question before moving on to the next question \nOnce submitted your result will be displayed at the bottom right "));
+			questionAndChoiceBox.getChildren().add(questionLabel);
+
 			HBox buttonBox = new HBox(10);
 			Button nextButton = new Button("Next Question");
 			Button backButton = new Button("Back ");
 			Button exit = new Button("Exit");
+			Button finish = new Button("Finish");
+			Button submit = new Button("Submit Question");
+			// We are setting the button box padding
+			buttonBox.setPadding(new Insets(10, 10, 10, 10));
 			int next = counter + 1;
 			int back = counter - 1;
-			nextButton.setOnAction(e -> quizScene(this.stage, this.mainPane, next, quizQuestion));
-			backButton.setOnAction(e -> quizScene(this.stage, this.mainPane, back, quizQuestion));
-			Button finish = new Button("Finish");
-			buttonBox.getChildren().addAll(exit, finish,backButton, nextButton);
+			// Set Exit to transition to main menu
+			exit.setOnAction(e -> mainMenu(this.stage, this.mainPane));
+			// This is the selection of and displaying of the questions in the quiz.
+			// Gets the current question
+			Question currentQuestion = quizQuestion.get(counter - 1);
+			String correctChoice = null;
+			// Sets a size for the choice pane
+			VBox choicePane = new VBox(10);
+			choicePane.setPadding(new Insets(10, 10, 10, 10));
+
+			ToggleGroup choiceButton = new ToggleGroup();
+			ArrayList<Choice> choiceList = currentQuestion.getChoiceList();
+			// This is checking the current question has multiple choices are correct
+			// The Radio button for a single correct answer
+			for (int i = 0; i < choiceList.size(); i++) {
+				// Getting the Choice
+				Choice tempChoice = choiceList.get(i);
+				// Creation of the radio button
+				RadioButton tempRadButton = new RadioButton(tempChoice.getChoiceString());
+				if (tempChoice.getChoiceValidity() == true) {
+					this.correctChoice = tempChoice.getChoiceString();
+				}
+				tempRadButton.setToggleGroup(choiceButton);
+				choicePane.getChildren().add(tempRadButton);
+			}
+
+			if (currentQuestion.getImage() != null) {
+				ImageView tempImage = new ImageView(currentQuestion.getImage());
+				tempImage.setFitHeight(250);
+				tempImage.setFitWidth(250);
+				pane.setCenter(tempImage);
+			}
+
+			VBox right = new VBox(10);
+			right.setPadding(new Insets(10, 10, 10, 10));
+			right.getChildren().add(new Label("Total questions in quiz: " + quizQuestion.size()));
+			right.getChildren().add(new Label("Current question: " + counter));
+			right.setAlignment(Pos.BOTTOM_RIGHT);
+			// Setting next button action
+			nextButton.setOnAction(
+					e -> quizScene(this.stage, this.mainPane, next, quizQuestion, this.answered, this.correct));
+			backButton.setOnAction(
+					e -> quizScene(this.stage, this.mainPane, back, quizQuestion, this.answered, this.correct));
+			buttonBox.getChildren().addAll(exit, submit);
+
+			// Transition effect
+			FadeTransition fade = new FadeTransition();
+			fade.setDuration(Duration.millis(1000));
+			fade.setFromValue(0);
+			fade.setToValue(10);
+			fade.setAutoReverse(true);
+			fade.setNode(pane);
+			fade.play();
+
+			submit.setOnAction(e -> {
+				RadioButton tempRadio = (RadioButton) choiceButton.getSelectedToggle();
+				if (tempRadio == null) {
+					Alert alert = new Alert(AlertType.WARNING);
+					alert.setContentText("Warning. No choice selected");
+					alert.show();
+				} else {
+					this.answered++;
+					if (tempRadio.getText().equals(this.correctChoice)) {
+						this.correct++;
+						right.getChildren().add(new Label("Correct Answer"));
+					} else {
+						right.getChildren().add(new Label("Wrong Answer"));
+					}
+					buttonBox.getChildren().add(nextButton);
+					buttonBox.getChildren().remove(1);
+
+				}
+			});
+
+			pane.setLeft(choicePane);
+			pane.setTop(questionAndChoiceBox);
+			pane.setRight(right);
 			pane.setBottom(buttonBox);
-			System.out.println(counter);
 			this.stage.setScene(scene);
 		}
-		
+
 		if (counter == 1) {
 			pane = new BorderPane();
-			scene = new Scene(pane, 700, 700);
+			scene = new Scene(pane, 1000, 800);
+
 			Label questionLabel = new Label(counter + ".)  " + quizQuestion.get(counter - 1).getQuestion());
 			questionLabel.setMaxHeight(100);
-			pane.setTop(questionLabel);
 			HBox buttonBox = new HBox(10);
+			// We are setting the button box padding
+			buttonBox.setPadding(new Insets(10, 10, 10, 10));
+			// Setting up the question and choice box for left side of the screen
+			VBox questionAndChoiceBox = new VBox(10);
+			questionAndChoiceBox.setPadding(new Insets(10, 10, 10, 10));
+			// Adding the question instruction labels
+			questionAndChoiceBox.getChildren()
+					.add(new Label("Select a choice and press Submit to view the results of the question."));
+			questionAndChoiceBox.getChildren().add(new Label(
+					"INSTRUCTIONS: You must submit the question before moving on to the next question \nOnce submitted your result will be displayed at the bottom right "));
+			questionAndChoiceBox.getChildren().add(questionLabel);
+			// Creating the various buttons that we need
 			Button nextButton = new Button("Next Question");
 			Button exit = new Button("Exit");
+			Button finish = new Button("Finish");
+			Button submit = new Button("Submit Question");
+			// Setting up the various needed parametes for
 			int next = counter + 1;
 			int back = counter - 1;
-			nextButton.setOnAction(e -> quizScene(this.stage, this.mainPane, next, quizQuestion));
-			Button finish = new Button("Finish");
-			buttonBox.getChildren().addAll(exit, finish, nextButton);
+			// Setting up action for next button
+			nextButton.setOnAction(
+					e -> quizScene(this.stage, this.mainPane, next, quizQuestion, this.answered, this.correct));
+
+			// Set Exit to transition to main menu
+			exit.setOnAction(e -> mainMenu(this.stage, this.mainPane));
+			// This is the selection of and displaying of the questions in the quiz.
+			Question currentQuestion = quizQuestion.get(counter - 1);
+			// Creating pane for the choices
+			VBox choicePane = new VBox(10);
+			choicePane.setPadding(new Insets(10, 10, 10, 10));
+			// Setting up the button for the choices
+			ToggleGroup choiceButton = new ToggleGroup();
+			ArrayList<Choice> choiceList = quizQuestion.get(counter - 1).getChoiceList();
+
+			// The Radio button for a single correct answer
+			for (int i = 0; i < choiceList.size(); i++) {
+				// Getting the Choice
+				Choice tempChoice = choiceList.get(i);
+				if (tempChoice.getChoiceValidity() == true) {
+					this.correctChoice = tempChoice.getChoiceString();
+				}
+				// Creation of the radio button
+				RadioButton tempRadButton = new RadioButton(tempChoice.getChoiceString());
+				// We are making it so there is only a single answer that can be selected
+				tempRadButton.setToggleGroup(choiceButton);
+				choicePane.getChildren().add(tempRadButton);
+			}
+			// Checking for an image
+			if (currentQuestion.getImage() != null) {
+				ImageView tempImage = new ImageView(currentQuestion.getImage());
+				// Setting the image max height and width
+				tempImage.setFitHeight(250);
+				tempImage.setFitWidth(250);
+				// Adds it to the pane
+				pane.setCenter(tempImage);
+			}
+			// Setting up the Right side of the screen question counter and feedback
+			VBox right = new VBox(10);
+			right.setPadding(new Insets(10, 10, 10, 10));
+			right.getChildren().add(new Label("Total questions in quiz: " + quizQuestion.size()));
+			right.getChildren().add(new Label("Current question: " + counter));
+			right.setAlignment(Pos.BOTTOM_RIGHT);
+			// Setting up alignment
+
+			// Sets up submit button action
+			submit.setOnAction(e -> {
+				RadioButton tempRadio = (RadioButton) choiceButton.getSelectedToggle();
+				if (tempRadio == null) {
+					// Alert for no answer selected
+					Alert alert = new Alert(AlertType.WARNING);
+					alert.setContentText("Warning. No choice selected");
+					alert.show();
+				} else {
+					// When answer is selected
+					this.answered++;
+					if (tempRadio.getText().equals(this.correctChoice)) {
+						this.correct++;
+						// Increments the number of correct
+						right.getChildren().add(new Label("Correct Answer"));
+					} else {
+						right.getChildren().add(new Label("Wrong Answer"));
+					}
+					// This is removing submit from the button box
+					buttonBox.getChildren().remove(1);
+					// Adding the next button
+					buttonBox.getChildren().add(nextButton);
+				}
+			});
+			// Transition effect
+			FadeTransition fade = new FadeTransition();
+			fade.setDuration(Duration.millis(1000));
+			fade.setFromValue(0);
+			fade.setToValue(10);
+			fade.setAutoReverse(true);
+			fade.setNode(pane);
+			fade.play();
+			// Adding all the remaining buttons
+			buttonBox.getChildren().addAll(exit, submit);
+			// Set Exit to transition to main menu
+			exit.setOnAction(e -> mainMenu(this.stage, this.mainPane));
+			// Sets up scene with all the the buttons
+			pane.setRight(right);
+			pane.setLeft(choicePane);
+			pane.setTop(questionAndChoiceBox);
 			pane.setBottom(buttonBox);
 			this.stage.setScene(scene);
 		}
-		
+		// The case for the last Question
 		if (counter == quizQuestion.size()) {
+			// Setting up the new pane
 			pane = new BorderPane();
-			scene = new Scene(pane, 700, 700);
+			scene = new Scene(pane, 1000, 800);
+
+			// Gets the label for the question
 			Label questionLabel = new Label(counter + ".)  " + quizQuestion.get(counter - 1).getQuestion());
 			questionLabel.setMaxHeight(100);
-			pane.setTop(questionLabel);
 			HBox buttonBox = new HBox(10);
-			Button submit = new Button("Submit Quiz");
-			Button backButton = new Button("Back ");
+			// Creates a Vbox for left side of the screen
+			VBox questionAndChoiceBox = new VBox(10);
+			// This sets up the instuctions for the quiz screen
+			questionAndChoiceBox.setPadding(new Insets(10, 10, 10, 10));
+			questionAndChoiceBox.getChildren().add(new Label(
+					"INSTRUCTIONS: Select a choice and press Submit to view the results of the question. \nOnce submitted your result will be displayed at the bottom right "));
+			questionAndChoiceBox.getChildren().add(new Label("Final question. Press Finish Quiz to view results"));
+			questionAndChoiceBox.getChildren().add(questionLabel);
+			// Creation of the finish quiz button
 			Button exit = new Button("Exit");
+			Button finishQuiz = new Button("Finish Quiz");
+			// Creating the Submit button
+			Button submit = new Button("Submit Question");
+
+			// We are setting the button box padding
+			buttonBox.setPadding(new Insets(10, 10, 10, 10));
 			int next = counter + 1;
 			int back = counter - 1;
-			//Change submit
-			submit.setOnAction(e -> quizScene(this.stage, this.mainPane, next, quizQuestion));
-			backButton.setOnAction(e -> quizScene(this.stage, this.mainPane, back, quizQuestion));
-			Button finish = new Button("Finish");
-			buttonBox.getChildren().addAll(exit, backButton, submit);
+
+			// This is the selection of and displaying of the questions in the quiz.
+			ToggleGroup choiceButton = new ToggleGroup();
+			// String correctChoice = null;
+			Question currentQuestion = quizQuestion.get(counter - 1);
+			// Creation of the choice pane to be set to left when added
+			VBox choicePane = new VBox(10);
+			choicePane.setPadding(new Insets(10, 10, 10, 10));
+			ArrayList<Choice> choiceList = currentQuestion.getChoiceList();
+			// This is checking the current question has multiple choices are correct
+			// The Radio button for a single correct answer
+			for (int i = 0; i < choiceList.size(); i++) {
+				// Getting the Choice
+				Choice tempChoice = choiceList.get(i);
+				if (tempChoice.getChoiceValidity() == true) {
+					this.correctChoice = tempChoice.getChoiceString();
+				}
+				// Creation of the radio button
+				RadioButton tempRadButton = new RadioButton(tempChoice.getChoiceString());
+				tempRadButton.setToggleGroup(choiceButton);
+				choicePane.getChildren().add(tempRadButton);
+			}
+			// Set Exit to transition to main menu
+			exit.setOnAction(e -> mainMenu(this.stage, this.mainPane));
+			if (currentQuestion.getImage() != null) {
+				// Setting up of image if existent
+				ImageView tempImage = new ImageView(currentQuestion.getImage());
+				tempImage.setFitHeight(250);
+				tempImage.setFitWidth(250);
+				pane.setCenter(tempImage);
+			}
+			// Setting up the vbox for the right side of the screen with the info
+			VBox right = new VBox(10);
+			right.setPadding(new Insets(10, 10, 10, 10));
+			right.getChildren().add(new Label("Total questions in quiz: " + quizQuestion.size()));
+			right.getChildren().add(new Label("Current question: " + counter));
+			right.setAlignment(Pos.BOTTOM_RIGHT);
+			// Sets up choice button action
+			submit.setOnAction(e -> {
+				// Setting up the list of radio buttons for question
+				RadioButton tempRadio = (RadioButton) choiceButton.getSelectedToggle();
+				if (tempRadio == null) {
+					// Checking if choice is selected states a warning
+					Alert alert = new Alert(AlertType.WARNING);
+					alert.setContentText("Warning. No choice selected");
+					alert.show();
+				} else {
+					// Check adding correct answers when correct is selected
+					this.answered++;
+					if (tempRadio.getText().equals(this.correctChoice)) {
+						this.correct++;
+						// Updates the left side if answer is correct
+						right.getChildren().add(new Label("Correct Answer"));
+					} else {
+						// Updates if the answer is incorrect
+						right.getChildren().add(new Label("Wrong Answer"));
+					}
+					// add the finished quiz button
+					buttonBox.getChildren().add(finishQuiz);
+					// Removing next question when quiz is finished
+					buttonBox.getChildren().remove(1);
+				}
+			});
+
+			// Transition effect
+			FadeTransition fade = new FadeTransition();
+			fade.setDuration(Duration.millis(1000));
+			fade.setFromValue(0);
+			fade.setToValue(10);
+			fade.setAutoReverse(true);
+			fade.setNode(pane);
+			fade.play();
+			// Sets the action for the finish quiz to transition into the last scene
+			finishQuiz.setOnAction(
+					e -> checkResults(this.stage, this.mainPane, this.correct, this.answered, quizQuestion));
+			// Adding all the Buttons to the HBox at the bottom of the screen
+			buttonBox.getChildren().addAll(exit, submit);
+			// Adding all the boxes and items to the scene
+			pane.setLeft(choicePane);
+			pane.setRight(right);
+			pane.setTop(questionAndChoiceBox);
 			pane.setBottom(buttonBox);
-			counter++;
+			// Setting the scene
 			this.stage.setScene(scene);
 		}
+
+	}
+
+	/**
+	 * This is the last scene in the quiz and will transition user back to the and
+	 * will transition user back to the main menu after showing results
+	 * 
+	 * @param primaryStage the stage being used overall
+	 * @param pane         the ordering for the scene
+	 * @param correct      the number of correct answers
+	 * @param answered     the number that is answered
+	 */
+	private void checkResults(Stage primaryStage, BorderPane pane, int correct, int answered,
+			ArrayList<Question> questionList) {
+		// Creating new Scene and layout
+		BorderPane pane1 = new BorderPane();
+		Scene checkResultsScene = new Scene(pane1, 700, 700);
+		// Creation of buttons
+		Button returnToMenuButton = new Button("Return to Menu");
+		VBox rightAns = new VBox();
+		rightAns.getChildren().add(new Label("Correct choices for quiz questions. \n \n"));
+		// Loops through the questions and adds them to a VBOX
+		for (int i = 0; i < questionList.size(); i++) {
+			try {
+				Choice tempChoice = questionList.get(i).getCorrectChoice();
+				// Question number is always index plus 1
+				int quesNumb = i + 1;
+				// This gets the correct answer for a given question and makes a label
+				Label tempLabel = new Label(quesNumb + ".) " + tempChoice.getChoiceString());
+				rightAns.getChildren().add(tempLabel);
+			} catch (NoCorrectAnswerException e) {
+				// Catches if there is no correct answer
+				int quesNumb = i + 1;
+				Label tempLabel = new Label(quesNumb + ".) No Correct Answer");
+				rightAns.getChildren().add(tempLabel);
+			}
+		}
+		// Transition effect
+		FadeTransition fade = new FadeTransition();
+		fade.setDuration(Duration.millis(700));
+		fade.setFromValue(0);
+		fade.setToValue(10);
+		fade.setAutoReverse(true);
+		fade.setNode(pane1);
+		fade.play();
+		returnToMenuButton.setOnAction(e -> mainMenu(this.stage, this.mainPane));
+		// Label to be mean can be removed later
+		VBox rightBox = new VBox();
+
+		// Getting the correct number of answers
+		Label numbCorrect = new Label("Number Correct: " + correct + "/" + questionList.size());
+		// Getting the percent score
+		double score = ((double) correct / (double) questionList.size()) * 100.0;
+		// Setting the fun label up
+		Label funLabel;
+		if (score == 100.0) {
+			funLabel = new Label("Your performance is AVERAGE");
+			funLabel.setTextFill(Color.GREEN);
+		} else {
+			funLabel = new Label("Your performance is DISAPPOINTING!!");
+			funLabel.setTextFill(Color.RED);
+		}
+
+		Label scoreLabel = new Label("Score: " + score + "%");
+		// Adding the labels to the box.
+		rightBox.getChildren().addAll(numbCorrect, scoreLabel, funLabel);
+		// Now set padding on all the lists
+		HBox buttonBox = new HBox();
+		// Adding the button to a box first
+		buttonBox.getChildren().add(returnToMenuButton);
+		buttonBox.setPadding(new Insets(10, 10, 10, 10));
+		rightBox.setPadding(new Insets(30, 10, 10, 0));
+		rightAns.setPadding(new Insets(30, 0, 30, 10));
+
+		// Adding everything to the pane
+		pane1.setLeft(rightAns);
+		pane1.setRight(rightBox);
+		pane1.setBottom(buttonBox);
+		Label scoreSummary = new Label("Score Summary");
+		HBox scoreTop = new HBox();
+		scoreTop.getChildren().add(scoreSummary);
+		scoreTop.setPadding(new Insets(20, 100, 0, 100));
+		pane1.setTop(scoreTop);
+		stage.setScene(checkResultsScene);
+	}
+
+	/**
+	 * This is the a helper method for setting the close action.
+	 */
+	private void promptSaveHelper() {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Save your questions before leaving");
+		alert.setHeaderText("Do you want to save all your questions before leaving?");
+		alert.setContentText("Press OK to save your questions \n Hit Cancel to leave without saving");
+
+		Optional<ButtonType> result = alert.showAndWait();
+
+		if (result.get() == ButtonType.OK) {
+			TextInputDialog dialog = new TextInputDialog("fileName");
+			dialog.setTitle("Saving your quiz");
+			dialog.setHeaderText("Save your quiz to a json file\nHit cancel to leave without saving");
+			dialog.setContentText("Enter the desired file name:");
+			// dialog.show();
+			Optional<String> result1 = dialog.showAndWait();
+
+			result1.ifPresent(name -> {
+				try {
+					writer.output(".", name);
+					Alert alert1 = new Alert(AlertType.CONFIRMATION);
+					alert1.setContentText("File exported sucessfully to local project folder ");
+					alert1.show();
+					System.exit(0);
+
+				} catch (IOException e2) {
+					Alert alert1 = new Alert(AlertType.ERROR);
+					alert1.setContentText("Warning: File could not be read. Please edit your file and try again.");
+					alert1.show();
+				}
+			});
+
+		} else {
+		}
+		System.exit(0);
 
 	}
 

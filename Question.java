@@ -1,7 +1,8 @@
-
+package application;
 //
+
 // Title: (Final Project QuizGenerator: Question Class)
-// Files: (Choice.java, GUI.java, Main.java, QuizGenerator.java)
+// Files: (Choice.java, Reader.java, Main.java, Writer.java)
 // Course: (CS400, Semester 2, and 2019)
 //
 // Author: (Rei Bezat, Viknesh Ravichandar, Matthew Silveus, Siyu Cai)
@@ -10,7 +11,6 @@
 // Lecture Number: Lec 004
 // Due Date: 5/2/2019
 //
-
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,7 +36,10 @@ public class Question {
 	 * q.
 	 * 
 	 * @param choice ArrayList of Choices for a Question in the quiz
-	 * @param q      String the represents the question
+	 * @param choice List of Choice Objects
+	 * @param q      String that represents the question
+	 * @param md     String that represents the metadata
+	 * @param t      String that represents the topic
 	 */
 	public Question(ArrayList<Choice> choice, String q, String md, String t) {
 		choiceList = choice; // initialize choiceList
@@ -53,14 +56,15 @@ public class Question {
 	 * image, and String q.
 	 * 
 	 * @param choice ArrayList of Choices for a Question in the quiz
-	 * @param img    Image that is in the Question
-	 * @param q      String the represents the question
+	 * @param choice List of Choice Objects
+	 * @param img    String that represents the image name
+	 * @param q      String that represents the question
+	 * @param md     String that represents the meta-data
+	 * @param t      String that represents the topic
 	 */
 	public Question(ArrayList<Choice> choice, String img, String q, String md, String t) {
 		choiceList = choice; // initialize choiceList
-		image = new Image(img); //initialize image //////BROKEN
-
-
+		image = new Image(img);
 		question = q; // initialize question
 		metaData = md; // initialize metaData
 		imageName = img;
@@ -86,7 +90,6 @@ public class Question {
 		}
 		multipleChoice = false;
 	}
-	
 
 	/**
 	 * Accessor method for topic field
@@ -105,7 +108,7 @@ public class Question {
 	public void setTopic(String topic) {
 		this.topic = topic;
 	}
-	
+
 	/**
 	 * Accessor method for imageName field
 	 * 
@@ -142,22 +145,23 @@ public class Question {
 		this.choiceList = choiceList;
 	}
 
-//	/**
-//	 * Accessor method image field
-//	 * 
-//	 * @return image
-//	 */
-//	public ImageView getImage() {
-//		return image;
-//	}
-//
-//	/**
-//	 * Mutator method for image field
-//	 * @param image
-//	 */
-//	public void setImage(ImageView image) {
-//		this.image = image;
-//	}
+	/**
+	 * Accessor method image field
+	 * 
+	 * @return image
+	 */
+	public Image getImage() {
+		return image;
+	}
+
+	/**
+	 * Mutator method for image field
+	 * 
+	 * @param image
+	 */
+	public void setImage(Image image) {
+		this.image = image;
+	}
 
 	/**
 	 * Accessor method for question field
@@ -211,5 +215,27 @@ public class Question {
 	 */
 	public void setMetaData(String metaData) {
 		this.metaData = metaData;
+	}
+
+	/**
+	 * Method that returns the Choice object with the correct answer to the
+	 * question.
+	 * 
+	 * @throws NoCorrectAnswerException if there is no correct answer to the
+	 *                                  question.
+	 * @return The Choice object with the correct answer to the question
+	 */
+	protected Choice getCorrectChoice() throws NoCorrectAnswerException {
+		// Loop through the choice list and get the answer
+		for (int i = 0; i < choiceList.size(); i++) {
+			// We get the tempchoice
+			Choice tempChoice = choiceList.get(i);
+			// Check the
+			if (tempChoice.getChoiceValidity()) {
+				// Return correct choice
+				return tempChoice;
+			}
+		}
+		throw new NoCorrectAnswerException();
 	}
 }
